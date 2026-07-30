@@ -1,1 +1,10 @@
-ewogICJuYW1lIjogIkxVTkEgT1ZFUkRSSVZF772cREFZQlJFQUsgRFVFTCIsCiAgInNob3J0X25hbWUiOiAiTFVOQSBPVkVSRFJJVkUiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzExMTUzMCIsCiAgInRoZW1lX2NvbG9yIjogIiNmZjlkNTIiLAogICJkZXNjcmlwdGlvbiI6ICIxMOS6uuOBrkFJ44Ko44O844K444Kn44Oz44OI44GL44KJ6YG444Gz44CB5pi844KS5aWq44GE5ZCI44GGMkTmoLzpl5jjgrLjg7zjg6DjgIIiLAogICJpY29ucyI6IFtdCn0K
+{
+  "name": "LUNA OVERDRIVE｜DAYBREAK DUEL",
+  "short_name": "LUNA OVERDRIVE",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#111530",
+  "theme_color": "#ff9d52",
+  "description": "10人のAIエージェントから選び、昼を奪い合う2D格闘ゲーム。",
+  "icons": []
+}
