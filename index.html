@@ -23,7 +23,7 @@
         <p class="tagline">昼を守るのは、ルナか。ネコムシカか。</p>
       </div>
       <div class="header-right">
-        <span class="build-badge">BUILD 0.4 / DAYBREAK</span>
+        <span class="build-badge">BUILD 2.0 / DAYBREAK</span>
         <button class="btn btn-ghost audio-toggle" id="audioButton" type="button" aria-pressed="false">SOUND: OFF</button>
         <a href="https://kazuyoshi1118.github.io/luna-sun-catch/" target="_blank" rel="noreferrer">前作を遊ぶ ↗</a>
       </div>
@@ -61,8 +61,9 @@
             <div class="title-actions">
               <button class="btn btn-primary" id="startButton" type="button">VS CPU <span>→</span></button>
               <button class="btn btn-ghost" id="trainingButton" type="button">TRAINING MODE</button>
+              <button class="btn btn-ghost" id="arcadeButton" type="button">ARCADE RUN <span>↗</span></button>
             </div>
-            <p class="title-note">J / K / L / I で攻撃　・　S でガード　・　W でジャンプ</p>
+            <p class="title-note">J / K / L / I で攻撃　・　AA / DD でダッシュ　・　ゲームパッド対応</p>
           </div>
           <div class="character-select" id="characterSelectPanel" hidden>
             <p class="select-kicker">SELECT YOUR AGENT / ROSTER 10</p>
@@ -87,7 +88,7 @@
     <section class="control-strip">
       <div class="control-card">
         <span class="control-label">MOVE</span>
-        <div class="key-row"><kbd>A</kbd><kbd>D</kbd><span>歩く</span><kbd>W</kbd><span>ジャンプ</span><kbd>S</kbd><span>ガード</span><kbd>P</kbd><span>一時停止</span></div>
+        <div class="key-row"><kbd>A</kbd><kbd>D</kbd><span>歩く</span><kbd>A A</kbd><span>ダッシュ</span><kbd>W</kbd><span>ジャンプ</span><kbd>S</kbd><span>ガード</span><kbd>P</kbd><span>一時停止</span></div>
       </div>
       <div class="control-card attack-legend">
         <span class="control-label">ATTACK</span>
@@ -106,6 +107,7 @@
       <div><p class="kicker">MATCH REPORT</p><h2 id="resultTitle">LUNA WINS</h2><p id="resultMessage">昼は、まだ終わらない。</p></div>
       <div class="result-stats"><span>HITS <b id="resultHits">0</b></span><span>MAX COMBO <b id="resultCombo">0</b></span><span>GRADE <b id="resultGrade">B</b></span></div>
       <button class="btn btn-ghost" id="shareResultButton" type="button">SHARE RESULT ↗</button>
+      <button class="btn btn-primary" id="nextArcadeButton" type="button" hidden>NEXT FIGHT <span>→</span></button>
       <button class="btn btn-primary" id="rematchButton" type="button">REMATCH <span>→</span></button>
     </section>
 
