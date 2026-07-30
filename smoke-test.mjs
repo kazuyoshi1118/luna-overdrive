@@ -1,1 +1,113 @@
-aW1wb3J0IGZzIGZyb20gJ25vZGU6ZnMnOwppbXBvcnQgdm0gZnJvbSAnbm9kZTp2bSc7Cgpjb25zdCBzb3VyY2UgPSBmcy5yZWFkRmlsZVN5bmMobmV3IFVSTCgnLi9nYW1lLmpzJywgaW1wb3J0Lm1ldGEudXJsKSwgJ3V0ZjgnKTsKY29uc3QgbGlzdGVuZXJzID0gbmV3IE1hcCgpOwpjb25zdCBlbGVtZW50cyA9IG5ldyBNYXAoKTsKY29uc3QgbWFrZUVsZW1lbnQgPSAoaWQpID0+ICh7CiAgaWQsCiAgaGlkZGVuOiBmYWxzZSwKICB0ZXh0Q29udGVudDogJycsCiAgaW5uZXJIVE1MOiAnJywKICBzdHlsZTogeyBzZXRQcm9wZXJ0eSgpIHt9IH0sCiAgY2xhc3NMaXN0OiB7IGFkZCgpIHt9LCByZW1vdmUoKSB7fSwgdG9nZ2xlKCkge30gfSwKICBhZGRFdmVudExpc3RlbmVyKHR5cGUsIGhhbmRsZXIpIHsgbGlzdGVuZXJzLnNldChgJHtpZH06JHt0eXBlfWAsIGhhbmRsZXIpOyB9LAogIHNldEF0dHJpYnV0ZSgpIHt9LAogIHF1ZXJ5U2VsZWN0b3JBbGwoKSB7IHJldHVybiBbXTsgfSwKICBnZXRCb3VuZGluZ0NsaWVudFJlY3QoKSB7IHJldHVybiB7IHdpZHRoOiAxMjAwLCBoZWlnaHQ6IDYwMCB9OyB9LAogIG9mZnNldFdpZHRoOiAwCn0pOwoKZm9yIChjb25zdCBtYXRjaCBvZiBzb3VyY2UubWF0Y2hBbGwoL2dldEVsZW1lbnRCeUlkXCgnKFteJ10rKSdcKS9nKSkgZWxlbWVudHMuc2V0KG1hdGNoWzFdLCBtYWtlRWxlbWVudChtYXRjaFsxXSkpOwoKY29uc3Qgcm9zdGVySWRzID0gWydsdW5hJywgJ25la28nLCAna2FnYXJpJywgJ21penVraScsICdib2x0OScsICd2YW50YScsICdzeWxmYScsICdyeXVnYScsICdwaWtvJywgJ29yYmlzJ107CmNvbnN0IGdyaWQgPSBlbGVtZW50cy5nZXQoJ2NoYXJhY3RlckdyaWQnKTsKZ3JpZC5xdWVyeVNlbGVjdG9yQWxsID0gKHNlbGVjdG9yKSA9PiBzZWxlY3RvciA9PT0gJ1tkYXRhLWNoYXJhY3Rlcl0nCiAgPyByb3N0ZXJJZHMubWFwKChpZCkgPT4gKHsgZGF0YXNldDogeyBjaGFyYWN0ZXI6IGlkIH0sIGFkZEV2ZW50TGlzdGVuZXIoKSB7fSwgY2xhc3NMaXN0OiB7IHRvZ2dsZSgpIHt9IH0gfSkpCiAgOiBbXTsKT2JqZWN0LmRlZmluZVByb3BlcnR5KGdyaWQsICdpbm5lckhUTUwnLCB7IHNldCh2YWx1ZSkgeyB0aGlzLl9odG1sID0gdmFsdWU7IH0sIGdldCgpIHsgcmV0dXJuIHRoaXMuX2h0bWwgfHwgJyc7IH0gfSk7Cgpjb25zdCBjYW52YXNDb250ZXh0ID0gbmV3IFByb3h5KHt9LCB7CiAgZ2V0KHRhcmdldCwgcHJvcGVydHkpIHsKICAgIGlmICghKHByb3BlcnR5IGluIHRhcmdldCkpIHRhcmdldFtwcm9wZXJ0eV0gPSBwcm9wZXJ0eSA9PT0gJ2NyZWF0ZUxpbmVhckdyYWRpZW50JyA/ICgpID0+ICh7IGFkZENvbG9yU3RvcCgpIHt9IH0pIDogKCkgPT4ge307CiAgICByZXR1cm4gdGFyZ2V0W3Byb3BlcnR5XTsKICB9LAogIHNldCh0YXJnZXQsIHByb3BlcnR5LCB2YWx1ZSkgeyB0YXJnZXRbcHJvcGVydHldID0gdmFsdWU7IHJldHVybiB0cnVlOyB9Cn0pOwplbGVtZW50cy5nZXQoJ2ZpZ2h0Q2FudmFzJykuZ2V0Q29udGV4dCA9ICgpID0+IGNhbnZhc0NvbnRleHQ7CgpjbGFzcyBGYWtlSW1hZ2UgewogIGNvbnN0cnVjdG9yKCkgeyB0aGlzLmNvbXBsZXRlID0gZmFsc2U7IHRoaXMubmF0dXJhbFdpZHRoID0gMDsgdGhpcy5uYXR1cmFsSGVpZ2h0ID0gMDsgfQogIHNldCBzcmModmFsdWUpIHsgdGhpcy5fc3JjID0gdmFsdWU7IHRoaXMuY29tcGxldGUgPSB0cnVlOyB0aGlzLm5hdHVyYWxXaWR0aCA9IDQyNjsgdGhpcy5uYXR1cmFsSGVpZ2h0ID0gNjQwOyB9Cn0KCmNvbnN0IHRpbWVycyA9IFtdOwpjb25zdCBzZXRUaW1lciA9IChoYW5kbGVyKSA9PiB7IHRpbWVycy5wdXNoKGhhbmRsZXIpOyByZXR1cm4gdGltZXJzLmxlbmd0aDsgfTsKY29uc3QgY29udGV4dCA9IHsKICBjb25zb2xlLAogIGRvY3VtZW50OiB7CiAgICBnZXRFbGVtZW50QnlJZDogKGlkKSA9PiBlbGVtZW50cy5nZXQoaWQpLAogICAgZG9jdW1lbnRFbGVtZW50OiB7IHN0eWxlOiB7IHNldFByb3BlcnR5KCkge30gfSB9LAogICAgYm9keTogeyBjbGFzc0xpc3Q6IHsgYWRkKCkge30sIHJlbW92ZSgpIHt9LCB0b2dnbGUoKSB7fSB9IH0sCiAgICBxdWVyeVNlbGVjdG9yQWxsOiAoKSA9PiBbXQogIH0sCiAgd2luZG93OiB7IGFkZEV2ZW50TGlzdGVuZXIodHlwZSwgaGFuZGxlcikgeyBsaXN0ZW5lcnMuc2V0KGB3aW5kb3c6JHt0eXBlfWAsIGhhbmRsZXIpOyB9LCBjbGVhclRpbWVvdXQoKSB7fSwgc2V0VGltZW91dDogc2V0VGltZXIgfSwKICBuYXZpZ2F0b3I6IHt9LAogIEltYWdlOiBGYWtlSW1hZ2UsCiAgcGVyZm9ybWFuY2U6IHsgbm93OiAoKSA9PiAxMDAwIH0sCiAgcmVxdWVzdEFuaW1hdGlvbkZyYW1lKCkge30sCiAgc2V0VGltZW91dDogc2V0VGltZXIsCiAgY2xlYXJUaW1lb3V0KCkge30sCiAgTWF0aCwKICBEYXRlCn07Cgp2bS5jcmVhdGVDb250ZXh0KGNvbnRleHQpOwp2bS5ydW5JbkNvbnRleHQoYCR7c291cmNlfVxuO2dsb2JhbFRoaXMuX190ZXN0ID0geyBvcmRlcjogUk9TVEVSX09SREVSLCBjaG9vc2VDaGFyYWN0ZXIsIHNob3dDaGFyYWN0ZXJTZWxlY3QsIG1ha2VGaWdodGVyLCBnZXRNb3ZlRm9yLCB0cmlnZ2VyQWN0aW9uLCB1cGRhdGVGaWdodGVyLCBzdGFydE1hdGNoLCB0aWNrLCB0b2dnbGVQYXVzZSwgZ2V0U3RhdGU6ICgpID0+IHN0YXRlLCBnZXRDcHVYOiAoKSA9PiBjcHU/LnggfTtgLCBjb250ZXh0KTsKY29uc3QgdGVzdCA9IGNvbnRleHQuX190ZXN0OwoKY29uc3QgYXNzZXJ0ID0gKGNvbmRpdGlvbiwgbWVzc2FnZSkgPT4geyBpZiAoIWNvbmRpdGlvbikgdGhyb3cgbmV3IEVycm9yKG1lc3NhZ2UpOyB9Owphc3NlcnQodGVzdC5vcmRlci5sZW5ndGggPT09IDEwLCAncm9zdGVyIG11c3QgY29udGFpbiAxMCBmaWdodGVycycpOwp0ZXN0LnNob3dDaGFyYWN0ZXJTZWxlY3QoJ2NwdScpOwphc3NlcnQoKGdyaWQuaW5uZXJIVE1MLm1hdGNoKC9kYXRhLWNoYXJhY3Rlcj0vZykgfHwgW10pLmxlbmd0aCA9PT0gMTAsICdzZWxlY3Rpb24gbXVzdCByZW5kZXIgMTAgY2FyZHMnKTsKZm9yIChjb25zdCBpZCBvZiB0ZXN0Lm9yZGVyKSB7CiAgY29uc3Qgcm9zdGVyRmlnaHRlciA9IHRlc3QubWFrZUZpZ2h0ZXIoJ3BsYXllcicsIGlkKTsKICBhc3NlcnQodGVzdC5nZXRNb3ZlRm9yKHJvc3RlckZpZ2h0ZXIsICdsJykubGFiZWwsIGAke2lkfSBzcGVjaWFsIGxhYmVsIG1pc3NpbmdgKTsKICBhc3NlcnQodGVzdC5nZXRNb3ZlRm9yKHJvc3RlckZpZ2h0ZXIsICdpJykubGFiZWwsIGAke2lkfSBvdmVyZHJpdmUgbGFiZWwgbWlzc2luZ2ApOwogIGFzc2VydCh0ZXN0LmdldE1vdmVGb3Iocm9zdGVyRmlnaHRlciwgJ2wnKS52aXN1YWwgIT09ICdlbmVyZ3knLCBgJHtpZH0gcHJvamVjdGlsZSB2aXN1YWwgbWlzc2luZ2ApOwp9CnRlc3QuY2hvb3NlQ2hhcmFjdGVyKCdib2x0OScpOwpjb25zdCBib2x0ID0gdGVzdC5tYWtlRmlnaHRlcigncGxheWVyJywgJ2JvbHQ5Jyk7CmFzc2VydChib2x0LmhlYWx0aCA9PT0gMTEyMCwgJ0JPTFQtOSBoZWFsdGggdHVuaW5nIG1pc3NpbmcnKTsKYXNzZXJ0KHRlc3QuZ2V0TW92ZUZvcihib2x0LCAnbCcpLmxhYmVsID09PSAnTUFHTkVUIFBVTkNIJywgJ0JPTFQtOSBzcGVjaWFsIG1pc3NpbmcnKTsKYXNzZXJ0KHRlc3QuZ2V0TW92ZUZvcihib2x0LCAnbCcpLnZpc3VhbCA9PT0gJ21hZ25ldCcsICdCT0xULTkgcHJvamVjdGlsZSB2aXN1YWwgbWlzc2luZycpOwpib2x0Lm1ldGVyID0gMTAwMDsKYXNzZXJ0KHRlc3QudHJpZ2dlckFjdGlvbihib2x0LCAnaScpLCAnT1ZFUkRSSVZFIHNob3VsZCBzdGFydCB3aXRoIGZ1bGwgbWV0ZXInKTsKCmNvbnN0IGJ1ZmZlckZpZ2h0ZXIgPSB0ZXN0Lm1ha2VGaWdodGVyKCdwbGF5ZXInLCAnbHVuYScpOwpjb25zdCBidWZmZXJPcHBvbmVudCA9IHRlc3QubWFrZUZpZ2h0ZXIoJ2NwdScsICduZWtvJyk7CmFzc2VydCh0ZXN0LnRyaWdnZXJBY3Rpb24oYnVmZmVyRmlnaHRlciwgJ2onKSwgJ2J1ZmZlciB0ZXN0IGxpZ2h0IHNob3VsZCBzdGFydCcpOwpidWZmZXJGaWdodGVyLmF0dGFjay5lbGFwc2VkID0gMzYwOwpidWZmZXJGaWdodGVyLmlucHV0QnVmZmVyID0geyBrZXk6ICdrJywgdHRsOiAuMiB9Owp0ZXN0LnVwZGF0ZUZpZ2h0ZXIoYnVmZmVyRmlnaHRlciwgYnVmZmVyT3Bwb25lbnQsIHsgbGVmdDogZmFsc2UsIHJpZ2h0OiBmYWxzZSwganVtcDogZmFsc2UsIGd1YXJkOiBmYWxzZSB9LCAuMDEpOwp0ZXN0LnVwZGF0ZUZpZ2h0ZXIoYnVmZmVyRmlnaHRlciwgYnVmZmVyT3Bwb25lbnQsIHsgbGVmdDogZmFsc2UsIHJpZ2h0OiBmYWxzZSwganVtcDogZmFsc2UsIGd1YXJkOiBmYWxzZSB9LCAuMDEpOwphc3NlcnQoYnVmZmVyRmlnaHRlci5hdHRhY2s/Lm1vdmUubGFiZWwgPT09ICdIRUFWWScsICdpbnB1dCBidWZmZXIgc2hvdWxkIGNoYWluIHRoZSBuZXh0IGF0dGFjaycpOwoKdGVzdC5zdGFydE1hdGNoKCd0cmFpbmluZycpOwp0aW1lcnMuYXQoLTEpPy4oKTsKYXNzZXJ0KHRlc3QuZ2V0U3RhdGUoKSA9PT0gJ3BsYXlpbmcnLCAndHJhaW5pbmcgbWF0Y2ggc2hvdWxkIGVudGVyIHBsYXlpbmcgc3RhdGUnKTsKdGVzdC50b2dnbGVQYXVzZSgpOwphc3NlcnQodGVzdC5nZXRTdGF0ZSgpID09PSAncGF1c2VkJywgJ3BhdXNlIHNob3VsZCBmcmVlemUgYSBsaXZlIG1hdGNoJyk7CnRlc3QudG9nZ2xlUGF1c2UoKTsKYXNzZXJ0KHRlc3QuZ2V0U3RhdGUoKSA9PT0gJ3BsYXlpbmcnLCAncGF1c2Ugc2hvdWxkIHJlc3VtZSBhIGxpdmUgbWF0Y2gnKTsKCnRlc3Quc3RhcnRNYXRjaCgnY3B1Jyk7CnRpbWVycy5hdCgtMSk/LigpOwp0ZXN0LnRpY2soLjUpOwp0ZXN0LnN0YXJ0TWF0Y2goJ3RyYWluaW5nJyk7CnRpbWVycy5hdCgtMSk/LigpOwp0ZXN0LnRpY2soLjUpOwpjb25zdCB0cmFpbmluZ0NwdVggPSB0ZXN0LmdldENwdVgoKTsKYXNzZXJ0KHRyYWluaW5nQ3B1WCA9PT0gODgwLCAndHJhaW5pbmcgQ1BVIHNob3VsZCBiZWdpbiBhdCB0aGUgcmlnaHQtc2lkZSBhbmNob3InKTsKCmNvbnNvbGUubG9nKCdMVU5BIE9WRVJEUklWRSBzbW9rZSB0ZXN0IHBhc3NlZDogcm9zdGVyLCBzZWxlY3Rpb24sIHR1bmluZywgcHJvamVjdGlsZSB2aXN1YWwsIHN1cGVyLCBwYXVzZScpOwo=
+import fs from 'node:fs';
+import vm from 'node:vm';
+
+const source = fs.readFileSync(new URL('./game.js', import.meta.url), 'utf8');
+const listeners = new Map();
+const elements = new Map();
+const makeElement = (id) => ({
+  id,
+  hidden: false,
+  textContent: '',
+  innerHTML: '',
+  style: { setProperty() {} },
+  classList: { add() {}, remove() {}, toggle() {} },
+  addEventListener(type, handler) { listeners.set(`${id}:${type}`, handler); },
+  setAttribute() {},
+  querySelectorAll() { return []; },
+  getBoundingClientRect() { return { width: 1200, height: 600 }; },
+  offsetWidth: 0
+});
+
+for (const match of source.matchAll(/getElementById\('([^']+)'\)/g)) elements.set(match[1], makeElement(match[1]));
+
+const rosterIds = ['luna', 'neko', 'kagari', 'mizuki', 'bolt9', 'vanta', 'sylfa', 'ryuga', 'piko', 'orbis'];
+const grid = elements.get('characterGrid');
+grid.querySelectorAll = (selector) => selector === '[data-character]'
+  ? rosterIds.map((id) => ({ dataset: { character: id }, addEventListener() {}, classList: { toggle() {} } }))
+  : [];
+Object.defineProperty(grid, 'innerHTML', { set(value) { this._html = value; }, get() { return this._html || ''; } });
+
+const canvasContext = new Proxy({}, {
+  get(target, property) {
+    if (!(property in target)) target[property] = property === 'createLinearGradient' ? () => ({ addColorStop() {} }) : () => {};
+    return target[property];
+  },
+  set(target, property, value) { target[property] = value; return true; }
+});
+elements.get('fightCanvas').getContext = () => canvasContext;
+
+class FakeImage {
+  constructor() { this.complete = false; this.naturalWidth = 0; this.naturalHeight = 0; }
+  set src(value) { this._src = value; this.complete = true; this.naturalWidth = 426; this.naturalHeight = 640; }
+}
+
+const timers = [];
+const setTimer = (handler) => { timers.push(handler); return timers.length; };
+const context = {
+  console,
+  document: {
+    getElementById: (id) => elements.get(id),
+    documentElement: { style: { setProperty() {} } },
+    body: { classList: { add() {}, remove() {}, toggle() {} } },
+    querySelectorAll: () => []
+  },
+  window: { addEventListener(type, handler) { listeners.set(`window:${type}`, handler); }, clearTimeout() {}, setTimeout: setTimer },
+  navigator: {},
+  Image: FakeImage,
+  performance: { now: () => 1000 },
+  requestAnimationFrame() {},
+  setTimeout: setTimer,
+  clearTimeout() {},
+  Math,
+  Date
+};
+
+vm.createContext(context);
+vm.runInContext(`${source}\n;globalThis.__test = { order: ROSTER_ORDER, chooseCharacter, showCharacterSelect, makeFighter, getMoveFor, triggerAction, updateFighter, startMatch, tick, togglePause, getState: () => state, getCpuX: () => cpu?.x };`, context);
+const test = context.__test;
+
+const assert = (condition, message) => { if (!condition) throw new Error(message); };
+assert(test.order.length === 10, 'roster must contain 10 fighters');
+test.showCharacterSelect('cpu');
+assert((grid.innerHTML.match(/data-character=/g) || []).length === 10, 'selection must render 10 cards');
+for (const id of test.order) {
+  const rosterFighter = test.makeFighter('player', id);
+  assert(test.getMoveFor(rosterFighter, 'l').label, `${id} special label missing`);
+  assert(test.getMoveFor(rosterFighter, 'i').label, `${id} overdrive label missing`);
+  assert(test.getMoveFor(rosterFighter, 'l').visual !== 'energy', `${id} projectile visual missing`);
+}
+test.chooseCharacter('bolt9');
+const bolt = test.makeFighter('player', 'bolt9');
+assert(bolt.health === 1120, 'BOLT-9 health tuning missing');
+assert(test.getMoveFor(bolt, 'l').label === 'MAGNET PUNCH', 'BOLT-9 special missing');
+assert(test.getMoveFor(bolt, 'l').visual === 'magnet', 'BOLT-9 projectile visual missing');
+bolt.meter = 1000;
+assert(test.triggerAction(bolt, 'i'), 'OVERDRIVE should start with full meter');
+
+const bufferFighter = test.makeFighter('player', 'luna');
+const bufferOpponent = test.makeFighter('cpu', 'neko');
+assert(test.triggerAction(bufferFighter, 'j'), 'buffer test light should start');
+bufferFighter.attack.elapsed = 360;
+bufferFighter.inputBuffer = { key: 'k', ttl: .2 };
+test.updateFighter(bufferFighter, bufferOpponent, { left: false, right: false, jump: false, guard: false }, .01);
+test.updateFighter(bufferFighter, bufferOpponent, { left: false, right: false, jump: false, guard: false }, .01);
+assert(bufferFighter.attack?.move.label === 'HEAVY', 'input buffer should chain the next attack');
+
+test.startMatch('training');
+timers.at(-1)?.();
+assert(test.getState() === 'playing', 'training match should enter playing state');
+test.togglePause();
+assert(test.getState() === 'paused', 'pause should freeze a live match');
+test.togglePause();
+assert(test.getState() === 'playing', 'pause should resume a live match');
+
+test.startMatch('cpu');
+timers.at(-1)?.();
+test.tick(.5);
+test.startMatch('training');
+timers.at(-1)?.();
+test.tick(.5);
+const trainingCpuX = test.getCpuX();
+assert(trainingCpuX === 880, 'training CPU should begin at the right-side anchor');
+
+console.log('LUNA OVERDRIVE smoke test passed: roster, selection, tuning, projectile visual, super, pause');
