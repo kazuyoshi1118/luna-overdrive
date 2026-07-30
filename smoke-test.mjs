@@ -52,7 +52,7 @@ const context = {
     querySelectorAll: () => []
   },
   window: { addEventListener(type, handler) { listeners.set(`window:${type}`, handler); }, clearTimeout() {}, setTimeout: setTimer },
-  navigator: {},
+  navigator: { getGamepads: () => [] },
   Image: FakeImage,
   performance: { now: () => 1000 },
   requestAnimationFrame() {},
@@ -63,7 +63,7 @@ const context = {
 };
 
 vm.createContext(context);
-vm.runInContext(`${source}\n;globalThis.__test = { order: ROSTER_ORDER, chooseCharacter, showCharacterSelect, makeFighter, getMoveFor, triggerAction, updateFighter, startMatch, tick, togglePause, getState: () => state, getCpuX: () => cpu?.x };`, context);
+vm.runInContext(`${source}\n;globalThis.__test = { order: ROSTER_ORDER, chooseCharacter, showCharacterSelect, makeFighter, getMoveFor, triggerAction, updateFighter, startMatch, tick, togglePause, getState: () => state, getMode: () => mode, getArcadeOpponent: () => selectedCpuId, getCpuX: () => cpu?.x };`, context);
 const test = context.__test;
 
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
@@ -93,6 +93,15 @@ test.updateFighter(bufferFighter, bufferOpponent, { left: false, right: false, j
 test.updateFighter(bufferFighter, bufferOpponent, { left: false, right: false, jump: false, guard: false }, .01);
 assert(bufferFighter.attack?.move.label === 'HEAVY', 'input buffer should chain the next attack');
 
+const cancelFighter = test.makeFighter('player', 'luna');
+const cancelOpponent = test.makeFighter('cpu', 'neko');
+assert(test.triggerAction(cancelFighter, 'j'), 'cancel test light should start');
+cancelFighter.attack.hitDone = true;
+cancelFighter.attack.elapsed = 220;
+cancelFighter.inputBuffer = { key: 'k', ttl: .2 };
+test.updateFighter(cancelFighter, cancelOpponent, { left: false, right: false, jump: false, guard: false }, .01);
+assert(cancelFighter.attack?.move.label === 'HEAVY', 'confirmed hit should cancel into the buffered attack');
+
 test.startMatch('training');
 timers.at(-1)?.();
 assert(test.getState() === 'playing', 'training match should enter playing state');
@@ -110,4 +119,13 @@ test.tick(.5);
 const trainingCpuX = test.getCpuX();
 assert(trainingCpuX === 880, 'training CPU should begin at the right-side anchor');
 
-console.log('LUNA OVERDRIVE smoke test passed: roster, selection, tuning, projectile visual, super, pause');
+const dashFighter = test.makeFighter('player', 'kagari');
+test.updateFighter(dashFighter, test.makeFighter('cpu', 'neko'), { left: false, right: false, jump: false, guard: false, dashRight: true }, .01);
+assert(dashFighter.state === 'dash' && dashFighter.vx > 700, 'double-tap dash should accelerate the fighter');
+
+test.startMatch('arcade');
+timers.at(-1)?.();
+assert(test.getMode() === 'arcade', 'arcade mode should be selectable');
+assert(test.getArcadeOpponent() === 'neko', 'arcade route should begin with NEKOMUSICA');
+
+console.log('LUNA OVERDRIVE smoke test passed: roster, selection, tuning, projectile visual, super, pause, dash, arcade route');
