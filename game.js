@@ -17,6 +17,7 @@ const confirmCharacterButton = document.getElementById('confirmCharacterButton')
 const backToTitleButton = document.getElementById('backToTitleButton');
 const startButton = document.getElementById('startButton');
 const trainingButton = document.getElementById('trainingButton');
+const arcadeButton = document.getElementById('arcadeButton');
 const resetButton = document.getElementById('resetButton');
 const rematchButton = document.getElementById('rematchButton');
 const fightBanner = document.getElementById('fightBanner');
@@ -38,6 +39,7 @@ const resultHits = document.getElementById('resultHits');
 const resultCombo = document.getElementById('resultCombo');
 const resultGrade = document.getElementById('resultGrade');
 const shareResultButton = document.getElementById('shareResultButton');
+const nextArcadeButton = document.getElementById('nextArcadeButton');
 const playerHudNameEl = document.getElementById('playerHudName');
 const playerHudTitleEl = document.getElementById('playerHudTitle');
 const cpuHudNameEl = document.getElementById('cpuHudName');
@@ -56,6 +58,7 @@ const MAX_HEALTH = 1000;
 const MAX_METER = 1000;
 const keys = new Set();
 const justPressed = new Set();
+const lastDirectionPress = { a: 0, d: 0 };
 const particles = [];
 const projectiles = [];
 const floatingText = [];
@@ -105,6 +108,19 @@ const CHARACTER_ROSTER = {
 };
 const ROSTER_ORDER = Object.keys(CHARACTER_ROSTER);
 const PROJECTILE_STYLES = { luna: 'sun', neko: 'glitch', kagari: 'rush', mizuki: 'wave', bolt9: 'magnet', vanta: 'hex', sylfa: 'wind', ryuga: 'flame', piko: 'blob', orbis: 'orbit' };
+const ARCADE_ROUTE = ['neko', 'kagari', 'mizuki', 'bolt9', 'vanta', 'ryuga', 'sylfa', 'piko', 'orbis'];
+const CPU_STYLES = {
+  BALANCED: { preferred: 170, approach: .72, attack: .64, guard: .24, special: .22, super: .08 },
+  TRICKSTER: { preferred: 260, approach: .48, attack: .48, guard: .18, special: .36, super: .10 },
+  RUSHDOWN: { preferred: 105, approach: 1, attack: .78, guard: .12, special: .28, super: .12 },
+  ZONER: { preferred: 330, approach: .36, attack: .38, guard: .32, special: .52, super: .13 },
+  TANK: { preferred: 135, approach: .58, attack: .52, guard: .52, special: .2, super: .1 },
+  POWER: { preferred: 145, approach: .58, attack: .57, guard: .2, special: .3, super: .16 },
+  WIND: { preferred: 300, approach: .42, attack: .4, guard: .28, special: .5, super: .12 },
+  DRAGON: { preferred: 155, approach: .74, attack: .67, guard: .2, special: .34, super: .14 },
+  CHAOS: { preferred: 210, approach: .58, attack: .54, guard: .16, special: .34, super: .11 },
+  COSMIC: { preferred: 285, approach: .44, attack: .42, guard: .24, special: .44, super: .12 }
+};
 
 let canvasWidth = WORLD.width;
 let canvasHeight = WORLD.height;
@@ -124,7 +140,7 @@ let totalHits = 0;
 let maxCombo = 0;
 let player;
 let cpu;
-let cpuBrain = { timer: 0, move: 0, guard: false, action: null };
+let cpuBrain = { timer: 0, move: 0, guard: false, jump: false, action: null };
 let selectedPlayerId = 'luna';
 let selectedCpuId = 'neko';
 let selectionTarget = 'player';
@@ -132,6 +148,8 @@ let selectionMode = 'cpu';
 let pausedState = 'playing';
 let audioEnabled = false;
 let audioContext;
+let arcadeIndex = 0;
+let gamepadPrevious = {};
 
 function ensureAudio() {
   if (!audioEnabled) return null;
@@ -189,7 +207,7 @@ function makeFighter(side, characterId) {
   return {
     side, name: character.name, characterId: character.id, character, x: side === 'player' ? 320 : 880, y: WORLD.ground, vx: 0, vy: 0, facing: side === 'player' ? 1 : -1,
     health: character.health, meter: 0, state: 'idle', attack: null, hitstun: 0, blockstun: 0, combo: 0, comboTimer: 0,
-    maxCombo: 0, hits: 0, hurtFlash: 0, guard: false, grounded: true, aiPulse: 0, inputBuffer: null
+    maxCombo: 0, hits: 0, hurtFlash: 0, guard: false, grounded: true, aiPulse: 0, inputBuffer: null, dashTimer: 0, dashDir: 0, dashCooldown: 0
   };
 }
 
@@ -234,6 +252,20 @@ function showCharacterSelect(selectedMode) {
   renderCharacterSelect();
 }
 
+function readGamepad() {
+  const pad = navigator.getGamepads?.()[0];
+  if (!pad) { gamepadPrevious = {}; return { left: false, right: false, pausePressed: false }; }
+  const buttons = {};
+  const mapping = { jump: 0, guard: 1, j: 2, k: 3, l: 4, i: 5, pause: 9 };
+  Object.entries(mapping).forEach(([name, index]) => { buttons[name] = !!pad.buttons[index]?.pressed; });
+  const pressed = (name) => buttons[name] && !gamepadPrevious[name];
+  if (pressed('jump')) justPressed.add('w');
+  ['j', 'k', 'l', 'i'].forEach((key) => { if (pressed(key)) justPressed.add(key); });
+  const result = { left: (pad.axes?.[0] || 0) < -.28, right: (pad.axes?.[0] || 0) > .28, guard: buttons.guard, pausePressed: !!pressed('pause') };
+  gamepadPrevious = buttons;
+  return result;
+}
+
 function showTitleScreen() {
   state = 'menu';
   titleIntro.hidden = false;
@@ -257,7 +289,7 @@ function resizeCanvas() {
 function resetMatch() {
   state = 'menu';
   pausedState = 'playing';
-  cpuBrain = { timer: 0, move: 0, guard: false, action: null };
+  cpuBrain = { timer: 0, move: 0, guard: false, jump: false, action: null };
   player = makeFighter('player', selectedPlayerId);
   cpu = makeFighter('cpu', selectedCpuId);
   round = 1;
@@ -274,6 +306,8 @@ function resetMatch() {
   tipReadoutEl.textContent = player.character.tip;
   resultPanel.hidden = true;
   shareResultButton.textContent = 'SHARE RESULT ↗';
+  nextArcadeButton.hidden = true;
+  rematchButton.textContent = 'REMATCH →';
   titleOverlay.hidden = false;
   titleIntro.hidden = false;
   characterSelectPanel.hidden = true;
@@ -289,6 +323,7 @@ function resetMatch() {
 
 function startMatch(selectedMode) {
   mode = selectedMode;
+  if (mode === 'arcade') { arcadeIndex = 0; selectedCpuId = ARCADE_ROUTE[arcadeIndex]; }
   resetMatch();
   titleOverlay.hidden = true;
   document.body.classList.add('is-playing');
@@ -299,14 +334,14 @@ function startMatch(selectedMode) {
 
 function startRound() {
   state = 'countdown';
-  cpuBrain = { timer: 0, move: 0, guard: false, action: null };
+  cpuBrain = { timer: 0, move: 0, guard: false, jump: false, action: null };
   player = makeFighter('player', selectedPlayerId);
   cpu = makeFighter('cpu', selectedCpuId);
   roundClock = WORLD.roundSeconds;
   roundStartedAt = performance.now();
   roundNumberEl.textContent = String(round).padStart(2, '0');
   roundStateEl.textContent = 'ROUND ' + round;
-  announcerEl.textContent = mode === 'training' ? `TRAINING / ${player.name} VS ${cpu.name}` : 'FIRST TO TWO ROUNDS';
+  announcerEl.textContent = mode === 'training' ? `TRAINING / ${player.name} VS ${cpu.name}` : mode === 'arcade' ? `ARCADE ${arcadeIndex + 1} / ${ARCADE_ROUTE.length}・NEXT ${cpu.name}` : 'FIRST TO TWO ROUNDS';
   projectiles.length = 0;
   playSfx('round');
   showBanner('ROUND ' + round, 900);
@@ -365,8 +400,8 @@ function togglePause() {
   }
 }
 
-function readPlayerInput() {
-  return { left: keys.has('a') ? 1 : 0, right: keys.has('d') ? 1 : 0, jump: justPressed.has('w'), guard: keys.has('s') };
+function readPlayerInput(gamepad = {}) {
+  return { left: keys.has('a') || gamepad.left ? 1 : 0, right: keys.has('d') || gamepad.right ? 1 : 0, jump: justPressed.has('w'), guard: keys.has('s') || gamepad.guard };
 }
 
 function consumeActions(fighter) {
@@ -399,6 +434,8 @@ function updateFighter(fighter, opponent, input, dt) {
   if (!fighter || fighter.health <= 0) return;
   if (fighter.inputBuffer) { fighter.inputBuffer.ttl -= dt; if (fighter.inputBuffer.ttl <= 0) fighter.inputBuffer = null; }
   fighter.hurtFlash = Math.max(0, fighter.hurtFlash - dt);
+  fighter.dashTimer = Math.max(0, fighter.dashTimer - dt);
+  fighter.dashCooldown = Math.max(0, fighter.dashCooldown - dt);
   fighter.hitstun = Math.max(0, fighter.hitstun - dt * 1000);
   fighter.blockstun = Math.max(0, fighter.blockstun - dt * 1000);
   fighter.comboTimer = Math.max(0, fighter.comboTimer - dt);
@@ -418,13 +455,23 @@ function updateFighter(fighter, opponent, input, dt) {
     if (!bufferedStarted) {
       fighter.guard = !!input.guard && fighter.grounded;
       const direction = (input.right ? 1 : 0) - (input.left ? 1 : 0);
-      if (!fighter.guard) {
+      const dashDirection = input.dashLeft ? -1 : input.dashRight ? 1 : 0;
+      if (!fighter.guard && fighter.dashTimer <= 0 && dashDirection && fighter.dashCooldown <= 0) {
+        fighter.dashDir = dashDirection;
+        fighter.dashTimer = .12;
+        fighter.dashCooldown = .32;
+        fighter.vx = fighter.dashDir * 900;
+        fighter.state = 'dash';
+      } else if (!fighter.guard && fighter.dashTimer > 0) {
+        fighter.vx = fighter.dashDir * 900;
+        fighter.state = 'dash';
+      } else if (!fighter.guard) {
         fighter.vx = direction * fighter.character.speed;
         if (input.jump && fighter.grounded) { fighter.vy = -fighter.character.jump; fighter.grounded = false; }
       } else {
         fighter.vx = 0;
       }
-      fighter.state = fighter.guard ? 'block' : (fighter.grounded ? (direction ? 'walk' : 'idle') : 'jump');
+      fighter.state = fighter.dashTimer > 0 ? 'dash' : fighter.guard ? 'block' : (fighter.grounded ? (direction ? 'walk' : 'idle') : 'jump');
       fighter.facing = opponent.x >= fighter.x ? 1 : -1;
     } else {
       fighter.guard = false;
@@ -452,6 +499,17 @@ function updateAttack(fighter, opponent, dt) {
   if (!attack.hitDone && attack.elapsed >= activeStart && attack.elapsed <= activeEnd) {
     if (move.super) addBurst(fighter.x + fighter.facing * 120, fighter.y - 128, move.color, 2);
     if (!move.projectile) resolveMeleeHit(fighter, opponent, move);
+  }
+  if (fighter.inputBuffer && attack.hitDone && attack.elapsed >= activeEnd + 24 && !move.super) {
+    const bufferedKey = fighter.inputBuffer.key;
+    const previousAttack = fighter.attack;
+    fighter.inputBuffer = null;
+    fighter.attack = null;
+    if (triggerAction(fighter, bufferedKey)) {
+      addFloatingText(fighter.x, fighter.y - 182, 'CANCEL');
+      return;
+    }
+    fighter.attack = previousAttack;
   }
   if (attack.elapsed >= activeEnd + move.recovery) { fighter.attack = null; fighter.state = 'idle'; }
 }
@@ -523,27 +581,45 @@ function updateCpu(dt) {
   cpu.facing = distance >= 0 ? 1 : -1;
   cpuBrain.timer -= dt;
   if (cpuBrain.timer <= 0 && !cpu.attack && cpu.hitstun <= 0 && cpu.blockstun <= 0) {
-    cpuBrain.timer = .22 + Math.random() * .5;
-    cpuBrain.move = absDistance > 190 ? Math.sign(distance) : (Math.random() < .33 ? -Math.sign(distance) : 0);
-    cpuBrain.guard = absDistance < 150 && Math.random() < .28;
+    const style = CPU_STYLES[cpu.character.role] || CPU_STYLES.BALANCED;
+    const distanceError = absDistance - style.preferred;
+    const approaching = distanceError < -32;
+    const tooFar = distanceError > 42;
+    cpuBrain.timer = .18 + Math.random() * .38;
+    cpuBrain.move = tooFar ? Math.sign(distance) : approaching ? -Math.sign(distance) * (Math.random() < .22 ? 1 : 0) : 0;
+    if (style.approach >= .8 && absDistance > style.preferred) cpuBrain.move = Math.sign(distance);
+    if (style.approach <= .45 && absDistance < style.preferred - 34) cpuBrain.move = -Math.sign(distance);
+    cpuBrain.guard = absDistance < 175 && Math.random() < style.guard;
+    cpuBrain.jump = cpu.character.role === 'CHAOS' && Math.random() < .14;
     cpuBrain.action = null;
-    if (absDistance < 150 && Math.random() < .63) cpuBrain.action = Math.random() < .58 ? 'j' : 'k';
-    else if (absDistance < 360 && cpu.meter >= Math.abs(getMoveFor(cpu, 'l').meter) && Math.random() < .22) cpuBrain.action = 'l';
-    else if (cpu.meter >= Math.abs(getMoveFor(cpu, 'i').meter) && Math.random() < .08) cpuBrain.action = 'i';
+    const closeEnough = absDistance <= Math.max(165, style.preferred + 26);
+    const specialReady = cpu.meter >= Math.abs(getMoveFor(cpu, 'l').meter);
+    const superReady = cpu.meter >= Math.abs(getMoveFor(cpu, 'i').meter);
+    if (superReady && Math.random() < style.super) cpuBrain.action = 'i';
+    else if (specialReady && Math.random() < style.special && (closeEnough || style.preferred > 220)) cpuBrain.action = 'l';
+    else if (closeEnough && Math.random() < style.attack) cpuBrain.action = Math.random() < (cpu.character.role === 'POWER' || cpu.character.role === 'TANK' ? .7 : .55) ? 'k' : 'j';
     if (cpuBrain.action) triggerAction(cpu, cpuBrain.action);
   }
-  if (!cpu.attack) { cpu.guard = cpuBrain.guard; cpu.vx = cpuBrain.move * cpu.character.speed * .72; cpu.state = cpu.guard ? 'block' : (cpuBrain.move ? 'walk' : 'idle'); }
+  if (!cpu.attack) {
+    cpu.guard = cpuBrain.guard;
+    cpu.vx = cpuBrain.move * cpu.character.speed * .72;
+    cpu.state = cpu.guard ? 'block' : (cpu.grounded ? (cpuBrain.move ? 'walk' : 'idle') : 'jump');
+  }
 }
 
 function tick(dt) {
+  const gamepad = readGamepad();
+  if (gamepad.pausePressed) togglePause();
   if (state === 'playing') {
     if (hitstop > 0) { hitstop -= dt; return; }
     roundClock = Math.max(0, WORLD.roundSeconds - (performance.now() - roundStartedAt) / 1000);
-    const playerInput = readPlayerInput();
+    const playerInput = readPlayerInput(gamepad);
+    playerInput.dashLeft = justPressed.has('dashLeft');
+    playerInput.dashRight = justPressed.has('dashRight');
     consumeActions(player);
     updateCpu(dt);
     updateFighter(player, cpu, playerInput, dt);
-    const cpuInput = mode === 'training' ? { left: false, right: false, jump: false, guard: false } : { left: cpuBrain.move < 0, right: cpuBrain.move > 0, jump: false, guard: cpuBrain.guard };
+    const cpuInput = mode === 'training' ? { left: false, right: false, jump: false, guard: false } : { left: cpuBrain.move < 0, right: cpuBrain.move > 0, jump: cpuBrain.jump, guard: cpuBrain.guard };
     updateFighter(cpu, player, cpuInput, dt);
     updateProjectiles(dt);
     updateParticles(dt);
@@ -587,9 +663,21 @@ function finishMatch() {
   const winner = won ? player : cpu;
   const loser = won ? cpu : player;
   resultPanel.hidden = false;
+  nextArcadeButton.hidden = !(mode === 'arcade' && won && arcadeIndex < ARCADE_ROUTE.length - 1);
   resultTitle.textContent = won ? `${winner.name} WINS THE DAY` : `${winner.name} REWRITES THE RULES`;
-  resultTitle.style.color = winner.character.accent;
   resultMessage.textContent = won ? `${winner.character.tip} 次の指令を受け付けます。` : `${loser.name}も、ここから進化する。もう一度、昼を取り戻そう。`;
+  if (mode === 'arcade' && won && arcadeIndex < ARCADE_ROUTE.length - 1) {
+    resultTitle.textContent = `${winner.name} CLEARS THE SECTOR`;
+    resultMessage.textContent = `NEXT OPPONENT：${CHARACTER_ROSTER[ARCADE_ROUTE[arcadeIndex + 1]].name}。昼はまだ続く。`;
+    rematchButton.textContent = 'RESTART RUN →';
+  } else if (mode === 'arcade' && won) {
+    resultTitle.textContent = 'ARCADE RUN CLEAR';
+    resultMessage.textContent = `${winner.name}が全ルートを制覇した。次の指令を受け付けます。`;
+    rematchButton.textContent = 'RUN AGAIN →';
+  } else {
+    rematchButton.textContent = 'REMATCH →';
+  }
+  resultTitle.style.color = winner.character.accent;
   resultHits.textContent = String(totalHits);
   resultCombo.textContent = String(maxCombo);
   resultGrade.textContent = won && maxCombo >= 8 ? 'SS' : won ? 'A' : maxCombo >= 5 ? 'B' : 'C';
@@ -597,6 +685,20 @@ function finishMatch() {
   announcerEl.textContent = 'MATCH REPORT READY';
   pauseOverlay.hidden = true;
   pauseButton.textContent = 'PAUSE';
+}
+
+function nextArcadeFight() {
+  if (mode !== 'arcade' || arcadeIndex >= ARCADE_ROUTE.length - 1) return;
+  arcadeIndex += 1;
+  selectedCpuId = ARCADE_ROUTE[arcadeIndex];
+  round = 1;
+  playerRounds = 0;
+  cpuRounds = 0;
+  totalHits = 0;
+  maxCombo = 0;
+  resultPanel.hidden = true;
+  document.body.classList.add('is-playing');
+  startRound();
 }
 
 function addBurst(x, y, color, count = 8) {
@@ -842,20 +944,20 @@ function handleKeyDown(event) {
   const key = event.key.toLowerCase();
   if (audioEnabled) ensureAudio();
   if (key === 'p') { event.preventDefault(); togglePause(); return; }
-  if (['a', 'd', 'w', 's', 'j', 'k', 'l', 'i'].includes(key)) { event.preventDefault(); if (!keys.has(key)) justPressed.add(key); keys.add(key); }
+  if (['a', 'd', 'w', 's', 'j', 'k', 'l', 'i'].includes(key)) { event.preventDefault(); if (!keys.has(key)) { justPressed.add(key); if ((key === 'a' || key === 'd') && performance.now() - lastDirectionPress[key] < 240) justPressed.add(key === 'a' ? 'dashLeft' : 'dashRight'); if (key === 'a' || key === 'd') lastDirectionPress[key] = performance.now(); } keys.add(key); }
   if (key === 'enter' && state === 'menu') showCharacterSelect('cpu');
 }
 function handleKeyUp(event) { const key = event.key.toLowerCase(); keys.delete(key); }
 
 function wireControls() {
   window.addEventListener('keydown', handleKeyDown, { passive: false }); window.addEventListener('keyup', handleKeyUp);
-  startButton.addEventListener('click', () => showCharacterSelect('cpu')); trainingButton.addEventListener('click', () => showCharacterSelect('training')); confirmCharacterButton.addEventListener('click', () => startMatch(selectionMode));
+  startButton.addEventListener('click', () => showCharacterSelect('cpu')); trainingButton.addEventListener('click', () => showCharacterSelect('training')); arcadeButton.addEventListener('click', () => showCharacterSelect('arcade')); confirmCharacterButton.addEventListener('click', () => startMatch(selectionMode));
   playerSlotButton.addEventListener('click', () => { selectionTarget = 'player'; renderCharacterSelect(); }); cpuSlotButton.addEventListener('click', () => { selectionTarget = 'cpu'; renderCharacterSelect(); });
   backToTitleButton.addEventListener('click', showTitleScreen);
   audioButton.addEventListener('click', toggleAudio);
   pauseButton.addEventListener('click', togglePause);
   mobilePauseButton.addEventListener('click', togglePause);
-  shareResultButton.addEventListener('click', shareResult);
+  shareResultButton.addEventListener('click', shareResult); nextArcadeButton.addEventListener('click', nextArcadeFight);
   resetButton.addEventListener('click', resetMatch); rematchButton.addEventListener('click', () => startMatch(mode));
   document.querySelectorAll('[data-key]').forEach((button) => {
     const key = button.dataset.key;
