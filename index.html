@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#111530">
-  <meta name="description" content="LUNA OVERDRIVE｜AIエージェントを選んで戦う昼色2D格闘ゲーム。">
-  <meta property="og:title" content="LUNA OVERDRIVE｜DAYBREAK DUEL">
-  <meta property="og:description" content="10人のAIエージェントから選び、昼を奪い合う2D格闘ゲーム。">
+  <meta name="description" content="LUNA OVERDRIVE｜AIエージェントを選んで戦う2D格闘と、リアルタイム3Dショールーム。">
+  <meta property="og:title" content="LUNA OVERDRIVE｜3D DAYBREAK DUEL">
+  <meta property="og:description" content="10人のAIエージェントから選び、2D格闘と3Dデュエルを体験する。">
   <meta property="og:type" content="website">
   <meta property="og:image" content="assets/overdrive-stage.png">
   <meta name="twitter:card" content="summary_large_image">
@@ -23,7 +23,7 @@
         <p class="tagline">昼を守るのは、ルナか。ネコムシカか。</p>
       </div>
       <div class="header-right">
-        <span class="build-badge">BUILD 3.0 / DAYBREAK LAB</span>
+        <span class="build-badge">BUILD 3.5 / 3D DAYBREAK</span>
         <button class="btn btn-ghost audio-toggle" id="audioButton" type="button" aria-pressed="false">SOUND: OFF</button>
         <a href="https://kazuyoshi1118.github.io/luna-sun-catch/" target="_blank" rel="noreferrer">前作を遊ぶ ↗</a>
       </div>
@@ -62,8 +62,9 @@
               <button class="btn btn-primary" id="startButton" type="button">VS CPU <span>→</span></button>
               <button class="btn btn-ghost" id="trainingButton" type="button">TRAINING MODE</button>
               <button class="btn btn-ghost" id="arcadeButton" type="button">ARCADE RUN <span>↗</span></button>
+              <button class="btn btn-3d" id="showroomButton" type="button">3D SHOWROOM <span>↗</span></button>
             </div>
-            <p class="title-note">ASSISTならEで連携　・　SでPARRY　・　Uで投げ　・　OでBURST　・　FでFRAME LAB</p>
+            <p class="title-note">ASSISTならEで連携　・　SでPARRY　・　Uで投げ　・　OでBURST　・　3D SHOWROOMでキャラを動かす</p>
           </div>
           <div class="character-select" id="characterSelectPanel" hidden>
             <p class="select-kicker">SELECT YOUR AGENT / ROSTER 10</p>
@@ -83,6 +84,22 @@
         <div class="pause-overlay" id="pauseOverlay" hidden><strong>PAUSED</strong><span>Pで再開</span></div>
       </div>
       <div class="stage-bottomline"><span id="comboReadout">NO COMBO</span><span id="tipReadout">LUNA TIP：ゲージを溜めて、Lで昼の必殺技。</span><span id="frameReadout">FRAME LAB: OFF</span><span id="fpsReadout">60 FPS</span></div>
+    </section>
+
+    <section class="showroom-panel" id="showroomPanel" hidden>
+      <div class="showroom-header">
+        <div><p class="kicker">REALTIME WEBGL / BUILD 3.5</p><h2>DAYBREAK 3D SHOWROOM</h2><p>ルナたちは、平面から出てきた。</p></div>
+        <div class="showroom-badge" id="showroomStatus">WEBGL ONLINE / IDLE</div>
+      </div>
+      <div class="showroom-frame">
+        <canvas id="showroomCanvas" class="showroom-canvas" aria-label="ルナとAIエージェントが立つ3Dショールーム"></canvas>
+        <div class="showroom-overlay"><span id="showroomCaption">LUNA / THE DAYBREAK AGENT</span><span>DRAG TO ORBIT　・　A / D MOVE　・　J / K / L ATTACK</span></div>
+      </div>
+      <div class="showroom-toolbar">
+        <div><span class="control-label">3D AGENT SELECT</span><div class="showroom-roster" id="showroomRoster"></div></div>
+        <div class="showroom-stats"><span>PLAYER HP <b id="showroomPlayerHp">100</b></span><span>CPU HP <b id="showroomCpuHp">100</b></span><span>CAMERA <b id="showroomCameraReadout">ORBIT 0°</b></span></div>
+        <div class="showroom-actions"><button class="btn btn-ghost" id="showroomResetButton" type="button">RESET 3D DUEL</button><button class="btn btn-primary" id="showroomBackButton" type="button">← BACK TO 2D</button></div>
+      </div>
     </section>
 
     <section class="control-strip">
@@ -114,6 +131,7 @@
 
     <footer><span>made with Luna + Kaz</span><span>WORK 03 / PLAYABLE AI AGENT STORY</span><span><a href="https://note.com/shiny_eagle152" target="_blank" rel="noreferrer">制作ログを読む ↗</a></span></footer>
   </main>
-  <script src="game.js?v=30"></script>
+  <script src="game.js?v=35"></script>
+  <script src="showroom3d.js?v=35"></script>
 </body>
 </html>
