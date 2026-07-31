@@ -15,6 +15,7 @@ const selectionDetailSpecialEl = document.getElementById('selectionDetailSpecial
 const selectionDetailSuperEl = document.getElementById('selectionDetailSuper');
 const confirmCharacterButton = document.getElementById('confirmCharacterButton');
 const backToTitleButton = document.getElementById('backToTitleButton');
+const assistButton = document.getElementById('assistButton');
 const startButton = document.getElementById('startButton');
 const trainingButton = document.getElementById('trainingButton');
 const arcadeButton = document.getElementById('arcadeButton');
@@ -56,6 +57,8 @@ const MOVE_SPEED = 315;
 const JUMP_SPEED = 780;
 const MAX_HEALTH = 1000;
 const MAX_METER = 1000;
+const PARRY_WINDOW = 0.115;
+const DRIVE_BURST_COST = 300;
 const keys = new Set();
 const justPressed = new Set();
 const lastDirectionPress = { a: 0, d: 0 };
@@ -90,8 +93,10 @@ visualAssets.orbis.src = 'assets/orbis.png';
 const MOVES = {
   light: { key: 'j', label: 'LIGHT', startup: 80, active: 105, recovery: 180, damage: 45, range: 94, height: 132, knockback: 80, hitstun: 260, meter: 26, color: '#72dcff' },
   heavy: { key: 'k', label: 'HEAVY', startup: 180, active: 130, recovery: 300, damage: 100, range: 128, height: 120, knockback: 190, hitstun: 410, meter: 46, color: '#ff9d52' },
+  throw: { key: 'u', label: 'THROW', startup: 110, active: 100, recovery: 340, damage: 120, range: 92, height: 132, knockback: 300, hitstun: 550, meter: 20, color: '#ffe07a', throw: true },
   special: { key: 'l', label: 'DAYBREAK', startup: 250, active: 90, recovery: 310, damage: 145, range: 155, height: 164, knockback: 280, hitstun: 520, meter: -250, projectile: true, color: '#ff668d' },
-  super: { key: 'i', label: 'OVERDRIVE', startup: 380, active: 170, recovery: 540, damage: 330, range: 250, height: 250, knockback: 460, hitstun: 760, meter: -1000, super: true, color: '#63f2ce' }
+  super: { key: 'i', label: 'OVERDRIVE', startup: 380, active: 170, recovery: 540, damage: 330, range: 250, height: 250, knockback: 460, hitstun: 760, meter: -1000, super: true, color: '#63f2ce' },
+  burst: { key: 'o', label: 'DRIVE BURST', startup: 70, active: 140, recovery: 310, damage: 82, range: 148, height: 176, knockback: 500, hitstun: 460, meter: -DRIVE_BURST_COST, burst: true, color: '#fff0a7' }
 };
 
 const CHARACTER_ROSTER = {
@@ -110,16 +115,16 @@ const ROSTER_ORDER = Object.keys(CHARACTER_ROSTER);
 const PROJECTILE_STYLES = { luna: 'sun', neko: 'glitch', kagari: 'rush', mizuki: 'wave', bolt9: 'magnet', vanta: 'hex', sylfa: 'wind', ryuga: 'flame', piko: 'blob', orbis: 'orbit' };
 const ARCADE_ROUTE = ['neko', 'kagari', 'mizuki', 'bolt9', 'vanta', 'ryuga', 'sylfa', 'piko', 'orbis'];
 const CPU_STYLES = {
-  BALANCED: { preferred: 170, approach: .72, attack: .64, guard: .24, special: .22, super: .08 },
-  TRICKSTER: { preferred: 260, approach: .48, attack: .48, guard: .18, special: .36, super: .10 },
-  RUSHDOWN: { preferred: 105, approach: 1, attack: .78, guard: .12, special: .28, super: .12 },
-  ZONER: { preferred: 330, approach: .36, attack: .38, guard: .32, special: .52, super: .13 },
-  TANK: { preferred: 135, approach: .58, attack: .52, guard: .52, special: .2, super: .1 },
-  POWER: { preferred: 145, approach: .58, attack: .57, guard: .2, special: .3, super: .16 },
-  WIND: { preferred: 300, approach: .42, attack: .4, guard: .28, special: .5, super: .12 },
-  DRAGON: { preferred: 155, approach: .74, attack: .67, guard: .2, special: .34, super: .14 },
-  CHAOS: { preferred: 210, approach: .58, attack: .54, guard: .16, special: .34, super: .11 },
-  COSMIC: { preferred: 285, approach: .44, attack: .42, guard: .24, special: .44, super: .12 }
+  BALANCED: { preferred: 170, approach: .72, attack: .64, guard: .24, parry: .06, throw: .10, special: .22, super: .08 },
+  TRICKSTER: { preferred: 260, approach: .48, attack: .48, guard: .18, parry: .08, throw: .15, special: .36, super: .10 },
+  RUSHDOWN: { preferred: 105, approach: 1, attack: .78, guard: .12, parry: .04, throw: .2, special: .28, super: .12 },
+  ZONER: { preferred: 330, approach: .36, attack: .38, guard: .32, parry: .08, throw: .03, special: .52, super: .13 },
+  TANK: { preferred: 135, approach: .58, attack: .52, guard: .52, parry: .13, throw: .09, special: .2, super: .1 },
+  POWER: { preferred: 145, approach: .58, attack: .57, guard: .2, parry: .08, throw: .12, special: .3, super: .16 },
+  WIND: { preferred: 300, approach: .42, attack: .4, guard: .28, parry: .08, throw: .05, special: .5, super: .12 },
+  DRAGON: { preferred: 155, approach: .74, attack: .67, guard: .2, parry: .1, throw: .11, special: .34, super: .14 },
+  CHAOS: { preferred: 210, approach: .58, attack: .54, guard: .16, parry: .07, throw: .18, special: .34, super: .11 },
+  COSMIC: { preferred: 285, approach: .44, attack: .42, guard: .24, parry: .1, throw: .06, special: .44, super: .12 }
 };
 
 let canvasWidth = WORLD.width;
@@ -150,6 +155,7 @@ let audioEnabled = false;
 let audioContext;
 let arcadeIndex = 0;
 let gamepadPrevious = {};
+let assistMode = true;
 
 function ensureAudio() {
   if (!audioEnabled) return null;
@@ -207,7 +213,8 @@ function makeFighter(side, characterId) {
   return {
     side, name: character.name, characterId: character.id, character, x: side === 'player' ? 320 : 880, y: WORLD.ground, vx: 0, vy: 0, facing: side === 'player' ? 1 : -1,
     health: character.health, meter: 0, state: 'idle', attack: null, hitstun: 0, blockstun: 0, combo: 0, comboTimer: 0,
-    maxCombo: 0, hits: 0, hurtFlash: 0, guard: false, grounded: true, aiPulse: 0, inputBuffer: null, dashTimer: 0, dashDir: 0, dashCooldown: 0
+    maxCombo: 0, hits: 0, hurtFlash: 0, guard: false, grounded: true, aiPulse: 0, inputBuffer: null, assistSequence: null,
+    dashTimer: 0, dashDir: 0, dashCooldown: 0, parryTimer: 0, driveInvuln: 0, motionTime: 0
   };
 }
 
@@ -256,12 +263,12 @@ function readGamepad() {
   const pad = navigator.getGamepads?.()[0];
   if (!pad) { gamepadPrevious = {}; return { left: false, right: false, pausePressed: false }; }
   const buttons = {};
-  const mapping = { jump: 0, guard: 1, j: 2, k: 3, l: 4, i: 5, pause: 9 };
+  const mapping = { jump: 0, guard: 1, j: 2, k: 3, l: 4, i: 5, u: 6, o: 7, pause: 9 };
   Object.entries(mapping).forEach(([name, index]) => { buttons[name] = !!pad.buttons[index]?.pressed; });
   const pressed = (name) => buttons[name] && !gamepadPrevious[name];
   if (pressed('jump')) justPressed.add('w');
-  ['j', 'k', 'l', 'i'].forEach((key) => { if (pressed(key)) justPressed.add(key); });
-  const result = { left: (pad.axes?.[0] || 0) < -.28, right: (pad.axes?.[0] || 0) > .28, guard: buttons.guard, pausePressed: !!pressed('pause') };
+  ['j', 'k', 'l', 'i', 'u', 'o'].forEach((key) => { if (pressed(key)) justPressed.add(key); });
+  const result = { left: (pad.axes?.[0] || 0) < -.28, right: (pad.axes?.[0] || 0) > .28, guard: buttons.guard, parry: !!pressed('guard'), pausePressed: !!pressed('pause') };
   gamepadPrevious = buttons;
   return result;
 }
@@ -401,16 +408,51 @@ function togglePause() {
 }
 
 function readPlayerInput(gamepad = {}) {
-  return { left: keys.has('a') || gamepad.left ? 1 : 0, right: keys.has('d') || gamepad.right ? 1 : 0, jump: justPressed.has('w'), guard: keys.has('s') || gamepad.guard };
+  return { left: keys.has('a') || gamepad.left ? 1 : 0, right: keys.has('d') || gamepad.right ? 1 : 0, jump: justPressed.has('w'), guard: keys.has('s') || gamepad.guard, parry: justPressed.has('s') || gamepad.parry, assist: justPressed.has('e') };
 }
 
 function consumeActions(fighter) {
   if (fighter.side !== 'player') return;
-  ['j', 'k', 'l', 'i'].forEach((key) => {
+  if (justPressed.has('o')) triggerDriveBurst(fighter);
+  if (justPressed.has('e') && assistMode) triggerAssistCombo(fighter);
+  ['j', 'k', 'l', 'i', 'u'].forEach((key) => {
     if (!justPressed.has(key)) return;
     if (fighter.attack || fighter.hitstun > 0 || fighter.blockstun > 0) fighter.inputBuffer = { key, ttl: .2 };
     else triggerAction(fighter, key);
   });
+}
+
+function triggerAssistCombo(fighter) {
+  if (!fighter || fighter.attack || fighter.health <= 0 || fighter.hitstun > 0 || fighter.blockstun > 0 || !fighter.grounded) return false;
+  const finalKey = fighter.meter >= 250 ? 'l' : 'k';
+  fighter.assistSequence = ['j', 'k', finalKey];
+  if (!triggerAction(fighter, fighter.assistSequence.shift())) {
+    fighter.assistSequence = null;
+    return false;
+  }
+  showHitConfirm('ASSIST COMBO');
+  return true;
+}
+
+function triggerDriveBurst(fighter) {
+  if (!fighter || fighter.health <= 0 || fighter.attack || fighter.meter < DRIVE_BURST_COST) {
+    if (fighter?.side === 'player' && fighter?.meter < DRIVE_BURST_COST) showHitConfirm('NEED 300 DRIVE');
+    return false;
+  }
+  const move = getMoveFor(fighter, 'o');
+  fighter.meter -= DRIVE_BURST_COST;
+  fighter.hitstun = 0;
+  fighter.blockstun = 0;
+  fighter.parryTimer = 0;
+  fighter.driveInvuln = .24;
+  fighter.assistSequence = null;
+  fighter.attack = { move, elapsed: 0, hitDone: false, spawned: false };
+  fighter.state = 'burst';
+  fighter.vx = 0;
+  showBanner(`${fighter.name} DRIVE BURST`, 650);
+  addBurst(fighter.x, fighter.y - 110, move.color, 18);
+  playSfx('super');
+  return true;
 }
 
 function triggerAction(fighter, key) {
@@ -432,10 +474,13 @@ function triggerAction(fighter, key) {
 
 function updateFighter(fighter, opponent, input, dt) {
   if (!fighter || fighter.health <= 0) return;
+  fighter.motionTime += dt;
   if (fighter.inputBuffer) { fighter.inputBuffer.ttl -= dt; if (fighter.inputBuffer.ttl <= 0) fighter.inputBuffer = null; }
   fighter.hurtFlash = Math.max(0, fighter.hurtFlash - dt);
   fighter.dashTimer = Math.max(0, fighter.dashTimer - dt);
   fighter.dashCooldown = Math.max(0, fighter.dashCooldown - dt);
+  fighter.parryTimer = Math.max(0, fighter.parryTimer - dt);
+  fighter.driveInvuln = Math.max(0, fighter.driveInvuln - dt);
   fighter.hitstun = Math.max(0, fighter.hitstun - dt * 1000);
   fighter.blockstun = Math.max(0, fighter.blockstun - dt * 1000);
   fighter.comboTimer = Math.max(0, fighter.comboTimer - dt);
@@ -454,6 +499,11 @@ function updateFighter(fighter, opponent, input, dt) {
     }
     if (!bufferedStarted) {
       fighter.guard = !!input.guard && fighter.grounded;
+      if (fighter.guard && input.parry) {
+        fighter.parryTimer = PARRY_WINDOW;
+        fighter.state = 'parry';
+        addBurst(fighter.x + fighter.facing * 34, fighter.y - 100, '#fff0a7', 5);
+      }
       const direction = (input.right ? 1 : 0) - (input.left ? 1 : 0);
       const dashDirection = input.dashLeft ? -1 : input.dashRight ? 1 : 0;
       if (!fighter.guard && fighter.dashTimer <= 0 && dashDirection && fighter.dashCooldown <= 0) {
@@ -471,7 +521,7 @@ function updateFighter(fighter, opponent, input, dt) {
       } else {
         fighter.vx = 0;
       }
-      fighter.state = fighter.dashTimer > 0 ? 'dash' : fighter.guard ? 'block' : (fighter.grounded ? (direction ? 'walk' : 'idle') : 'jump');
+      fighter.state = fighter.dashTimer > 0 ? 'dash' : fighter.parryTimer > 0 ? 'parry' : fighter.guard ? 'block' : (fighter.grounded ? (direction ? 'walk' : 'idle') : 'jump');
       fighter.facing = opponent.x >= fighter.x ? 1 : -1;
     } else {
       fighter.guard = false;
@@ -500,6 +550,16 @@ function updateAttack(fighter, opponent, dt) {
     if (move.super) addBurst(fighter.x + fighter.facing * 120, fighter.y - 128, move.color, 2);
     if (!move.projectile) resolveMeleeHit(fighter, opponent, move);
   }
+  if (fighter.assistSequence && attack.hitDone && attack.elapsed >= activeEnd + 24 && !move.super) {
+    const bufferedKey = fighter.assistSequence.shift();
+    fighter.attack = null;
+    if (bufferedKey && triggerAction(fighter, bufferedKey)) {
+      addFloatingText(fighter.x, fighter.y - 182, 'ASSIST');
+      if (!fighter.assistSequence.length) fighter.assistSequence = null;
+      return;
+    }
+    fighter.assistSequence = null;
+  }
   if (fighter.inputBuffer && attack.hitDone && attack.elapsed >= activeEnd + 24 && !move.super) {
     const bufferedKey = fighter.inputBuffer.key;
     const previousAttack = fighter.attack;
@@ -511,7 +571,7 @@ function updateAttack(fighter, opponent, dt) {
     }
     fighter.attack = previousAttack;
   }
-  if (attack.elapsed >= activeEnd + move.recovery) { fighter.attack = null; fighter.state = 'idle'; }
+  if (attack.elapsed >= activeEnd + move.recovery) { fighter.attack = null; fighter.assistSequence = null; fighter.state = 'idle'; }
 }
 
 function bodyBox(fighter) { return { x: fighter.x - 35, y: fighter.y - 158, w: 70, h: 158 }; }
@@ -531,7 +591,30 @@ function resolveMeleeHit(attacker, defender, move) {
 }
 
 function applyHit(attacker, defender, rawDamage, knockback, hitstun, color, label) {
-  const guarding = defender.guard && defender.grounded && defender.facing === -attacker.facing;
+  if (defender.driveInvuln > 0) {
+    if (attacker.attack) attacker.attack.hitDone = true;
+    defender.vx = attacker.facing * -120;
+    addBurst(defender.x, defender.y - 95, '#fff0a7', 9);
+    addFloatingText(defender.x, defender.y - 185, 'INVULN');
+    showHitConfirm('DRIVE ESCAPE');
+    return;
+  }
+  if (defender.parryTimer > 0 && defender.grounded && defender.facing === -attacker.facing && !attacker.attack?.move.throw) {
+    if (attacker.attack) attacker.attack.hitDone = true;
+    defender.parryTimer = 0;
+    defender.guard = false;
+    defender.meter = Math.min(MAX_METER, defender.meter + 90);
+    attacker.blockstun = 380;
+    attacker.vx = attacker.facing * -220;
+    hitstop = .11;
+    addBurst(defender.x + defender.facing * 28, defender.y - 105, '#fff0a7', 16);
+    addFloatingText(defender.x, defender.y - 185, 'PARRY');
+    showHitConfirm('PARRY / TURN STEAL');
+    playSfx('block');
+    tipReadoutEl.textContent = defender.side === 'player' ? 'PARRY成功：攻めのターンを奪い返した。' : `${defender.name}がタイミングを読んだ。`;
+    return;
+  }
+  const guarding = !attacker.attack?.move.throw && defender.guard && defender.grounded && defender.facing === -attacker.facing;
   const damage = guarding ? Math.round(rawDamage * .14) : rawDamage;
   defender.health = Math.max(0, defender.health - damage);
   defender.vx = attacker.facing * (guarding ? knockback * .18 : knockback);
@@ -551,10 +634,10 @@ function applyHit(attacker, defender, rawDamage, knockback, hitstun, color, labe
   addBurst(defender.x, defender.y - 95, guarding ? '#b8c6ff' : color, guarding ? 5 : 11);
   playSfx(guarding ? 'block' : 'hit');
   addFloatingText(defender.x, defender.y - 185, guarding ? 'GUARD' : String(damage));
-  showHitConfirm(guarding ? 'BLOCKED' : `${label} / ${damage}`);
+  showHitConfirm(guarding ? 'BLOCKED' : label === 'THROW' ? `THROW / ${damage}` : `${label} / ${damage}`);
   document.body.classList.toggle('screen-shake', !guarding && rawDamage >= 90);
   window.setTimeout(() => document.body.classList.remove('screen-shake'), 160);
-  tipReadoutEl.textContent = guarding ? 'GUARD CRUSHではない。距離を作って、次の一手。' : (attacker.side === 'player' ? `GOOD HIT：${attacker.name}の昼が一段明るくなった。` : `${attacker.name}がルールを書き換えようとしている。`);
+  tipReadoutEl.textContent = guarding ? 'BLOCKED：投げで崩すか、距離を作って次の一手。' : label === 'THROW' ? 'THROW成功：ガードを読んで、攻めのターンを延長。' : (attacker.side === 'player' ? `GOOD HIT：${attacker.name}の昼が一段明るくなった。` : `${attacker.name}がルールを書き換えようとしている。`);
 }
 
 function updateProjectiles(dt) {
@@ -576,6 +659,10 @@ function updateProjectiles(dt) {
 
 function updateCpu(dt) {
   if (mode === 'training' || state !== 'playing' || cpu.health <= 0) return;
+  if ((cpu.hitstun > 0 || cpu.blockstun > 0) && cpu.meter >= DRIVE_BURST_COST && Math.random() < .035) {
+    triggerDriveBurst(cpu);
+    return;
+  }
   const distance = player.x - cpu.x;
   const absDistance = Math.abs(distance);
   cpu.facing = distance >= 0 ? 1 : -1;
@@ -590,6 +677,7 @@ function updateCpu(dt) {
     if (style.approach >= .8 && absDistance > style.preferred) cpuBrain.move = Math.sign(distance);
     if (style.approach <= .45 && absDistance < style.preferred - 34) cpuBrain.move = -Math.sign(distance);
     cpuBrain.guard = absDistance < 175 && Math.random() < style.guard;
+    cpuBrain.parry = cpuBrain.guard && Math.random() < style.parry && player.attack;
     cpuBrain.jump = cpu.character.role === 'CHAOS' && Math.random() < .14;
     cpuBrain.action = null;
     const closeEnough = absDistance <= Math.max(165, style.preferred + 26);
@@ -597,6 +685,7 @@ function updateCpu(dt) {
     const superReady = cpu.meter >= Math.abs(getMoveFor(cpu, 'i').meter);
     if (superReady && Math.random() < style.super) cpuBrain.action = 'i';
     else if (specialReady && Math.random() < style.special && (closeEnough || style.preferred > 220)) cpuBrain.action = 'l';
+    else if (closeEnough && player.guard && Math.random() < style.throw) cpuBrain.action = 'u';
     else if (closeEnough && Math.random() < style.attack) cpuBrain.action = Math.random() < (cpu.character.role === 'POWER' || cpu.character.role === 'TANK' ? .7 : .55) ? 'k' : 'j';
     if (cpuBrain.action) triggerAction(cpu, cpuBrain.action);
   }
@@ -619,7 +708,7 @@ function tick(dt) {
     consumeActions(player);
     updateCpu(dt);
     updateFighter(player, cpu, playerInput, dt);
-    const cpuInput = mode === 'training' ? { left: false, right: false, jump: false, guard: false } : { left: cpuBrain.move < 0, right: cpuBrain.move > 0, jump: cpuBrain.jump, guard: cpuBrain.guard };
+    const cpuInput = mode === 'training' ? { left: false, right: false, jump: false, guard: false, parry: false } : { left: cpuBrain.move < 0, right: cpuBrain.move > 0, jump: cpuBrain.jump, guard: cpuBrain.guard, parry: cpuBrain.parry };
     updateFighter(cpu, player, cpuInput, dt);
     updateProjectiles(dt);
     updateParticles(dt);
@@ -839,22 +928,122 @@ function drawFighter(fighter, now) {
 function drawCharacterArt(fighter, portrait) {
   const height = 350 * (fighter.character.id === 'neko' ? .93 : 1);
   const width = height * (portrait.naturalWidth / portrait.naturalHeight);
-  const lift = fighter.grounded ? 0 : Math.sin(performance.now() * .01) * 4;
+  const now = performance.now();
+  const lift = fighter.grounded ? 0 : Math.sin(now * .01) * 4;
   const attackProgress = fighter.attack ? fighter.attack.elapsed / (fighter.attack.move.startup + fighter.attack.move.active + fighter.attack.move.recovery) : 0;
   const active = fighter.attack && fighter.attack.elapsed >= fighter.attack.move.startup && fighter.attack.elapsed <= fighter.attack.move.startup + fighter.attack.move.active;
+  const motion = getMotionTransform(fighter, now, attackProgress, active);
   ctx.save();
-  ctx.translate(active ? 10 : fighter.state === 'walk' ? 3 : 0, active ? -4 : 0);
-  ctx.rotate(active ? -.045 : Math.sin(performance.now() * .002 + attackProgress) * .008);
-  ctx.scale(active ? 1.035 : 1, active ? .97 : 1);
+  drawMotionTrail(fighter, portrait, width, height, motion);
+  ctx.translate(motion.x, motion.y);
+  ctx.rotate(motion.rotation);
+  ctx.scale(motion.scaleX, motion.scaleY);
   ctx.globalAlpha = fighter.state === 'hit' ? .76 : 1;
   ctx.shadowColor = fighter.side === 'player' ? 'rgba(255,157,82,.55)' : 'rgba(166,140,255,.55)';
   ctx.shadowBlur = fighter.attack?.move.super ? 34 : 14;
   ctx.drawImage(portrait, -width / 2, -height + lift, width, height);
+  if (fighter.state === 'parry') {
+    ctx.globalAlpha = .86;
+    ctx.globalCompositeOperation = 'screen';
+    ctx.strokeStyle = '#fff0a7';
+    ctx.lineWidth = 7;
+    ctx.shadowColor = '#fff0a7';
+    ctx.shadowBlur = 22;
+    ctx.beginPath(); ctx.arc(0, -110, 92 + Math.sin(now * .03) * 6, -1.1, 1.1); ctx.stroke();
+  }
+  if (fighter.driveInvuln > 0) {
+    ctx.globalAlpha = .62;
+    ctx.strokeStyle = '#fff0a7';
+    ctx.lineWidth = 9;
+    ctx.shadowColor = '#fff0a7';
+    ctx.shadowBlur = 28;
+    ctx.beginPath(); ctx.arc(0, -110, 88 + Math.sin(now * .05) * 10, 0, Math.PI * 2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function getMotionTransform(fighter, now, attackProgress, active) {
+  const phase = now * .001;
+  const motion = { x: 0, y: 0, rotation: Math.sin(phase * 2 + fighter.x * .01) * .008, scaleX: 1, scaleY: 1 };
+  if (fighter.state === 'idle') {
+    motion.y = Math.sin(phase * 3.2 + fighter.x * .01) * 2.5;
+    motion.scaleX = 1 + Math.sin(phase * 3.2) * .006;
+    motion.scaleY = 1 - Math.sin(phase * 3.2) * .006;
+  } else if (fighter.state === 'walk') {
+    const step = Math.sin(phase * 13);
+    motion.y = Math.abs(step) * -3;
+    motion.x = step * 2;
+    motion.rotation = step * .025;
+    motion.scaleX = 1 + Math.abs(step) * .018;
+    motion.scaleY = 1 - Math.abs(step) * .018;
+  } else if (fighter.state === 'dash') {
+    const localDirection = (fighter.dashDir || 1) * fighter.facing;
+    motion.x = localDirection * 14;
+    motion.rotation = localDirection * -.035;
+    motion.scaleX = 1.13;
+    motion.scaleY = .91;
+  } else if (fighter.state === 'jump') {
+    motion.y = Math.sin(phase * 8) * 2;
+    motion.rotation = Math.sin(phase * 5) * .035;
+    motion.scaleX = .96;
+    motion.scaleY = 1.04;
+  } else if (fighter.state === 'hit') {
+    motion.x = -10;
+    motion.rotation = .11;
+    motion.scaleX = .92;
+    motion.scaleY = 1.07;
+  } else if (fighter.state === 'block') {
+    motion.x = -6;
+    motion.rotation = .055;
+    motion.scaleX = .96;
+    motion.scaleY = 1.03;
+  } else if (fighter.state === 'parry') {
+    motion.scaleX = .97;
+    motion.scaleY = 1.06;
+  } else if (fighter.state === 'burst') {
+    motion.x = 14;
+    motion.y = -4;
+    motion.rotation = -.06;
+    motion.scaleX = 1.12;
+    motion.scaleY = .90;
+  } else if (fighter.attack) {
+    if (attackProgress < .35) {
+      motion.x = -7;
+      motion.rotation = .055;
+      motion.scaleX = .94;
+      motion.scaleY = 1.05;
+    } else if (active) {
+      motion.x = 13;
+      motion.y = -5;
+      motion.rotation = -.08;
+      motion.scaleX = fighter.attack.move.super ? 1.10 : 1.06;
+      motion.scaleY = fighter.attack.move.super ? .90 : .95;
+    } else {
+      motion.x = 5;
+      motion.rotation = .025;
+      motion.scaleX = 1.02;
+      motion.scaleY = .98;
+    }
+  }
+  return motion;
+}
+
+function drawMotionTrail(fighter, portrait, width, height, motion) {
+  if (fighter.state !== 'dash' && !fighter.attack?.move?.burst) return;
+  const localDirection = (fighter.dashDir || fighter.facing || 1) * fighter.facing;
+  ctx.save();
+  ctx.globalCompositeOperation = 'screen';
+  for (let i = 3; i >= 1; i -= 1) {
+    ctx.globalAlpha = .045 * (4 - i);
+    ctx.translate(-localDirection * i * 19, i * 2);
+    ctx.drawImage(portrait, -width / 2, -height, width, height);
+    ctx.translate(localDirection * i * 19, -i * 2);
+  }
   ctx.restore();
 }
 
 function drawCharacterAura(fighter, now) {
-  const intensity = fighter.attack ? (fighter.attack.move.super ? .62 : .32) : fighter.guard ? .28 : fighter.state === 'walk' ? .16 : .09;
+  const intensity = fighter.attack ? (fighter.attack.move.super ? .62 : .32) : fighter.state === 'parry' ? .8 : fighter.guard ? .28 : fighter.state === 'walk' ? .16 : .09;
   const pulse = 1 + Math.sin(now * .004 + fighter.x * .01) * .06;
   ctx.save();
   ctx.globalCompositeOperation = 'screen';
@@ -871,6 +1060,12 @@ function drawCharacterAura(fighter, now) {
     ctx.beginPath();
     ctx.arc(0, -112, 50 + Math.sin(now * .008) * 5, 0, Math.PI * 2);
     ctx.stroke();
+  }
+  if (fighter.state === 'parry') {
+    ctx.globalAlpha = .72;
+    ctx.strokeStyle = '#fff0a7';
+    ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.arc(0, -112, 91 + Math.sin(now * .03) * 7, -1.3, 1.3); ctx.stroke();
   }
   ctx.restore();
 }
@@ -944,7 +1139,7 @@ function handleKeyDown(event) {
   const key = event.key.toLowerCase();
   if (audioEnabled) ensureAudio();
   if (key === 'p') { event.preventDefault(); togglePause(); return; }
-  if (['a', 'd', 'w', 's', 'j', 'k', 'l', 'i'].includes(key)) { event.preventDefault(); if (!keys.has(key)) { justPressed.add(key); if ((key === 'a' || key === 'd') && performance.now() - lastDirectionPress[key] < 240) justPressed.add(key === 'a' ? 'dashLeft' : 'dashRight'); if (key === 'a' || key === 'd') lastDirectionPress[key] = performance.now(); } keys.add(key); }
+  if (['a', 'd', 'w', 's', 'e', 'j', 'k', 'l', 'i', 'u', 'o'].includes(key)) { event.preventDefault(); if (!keys.has(key)) { justPressed.add(key); if ((key === 'a' || key === 'd') && performance.now() - lastDirectionPress[key] < 240) justPressed.add(key === 'a' ? 'dashLeft' : 'dashRight'); if (key === 'a' || key === 'd') lastDirectionPress[key] = performance.now(); } keys.add(key); }
   if (key === 'enter' && state === 'menu') showCharacterSelect('cpu');
 }
 function handleKeyUp(event) { const key = event.key.toLowerCase(); keys.delete(key); }
@@ -953,6 +1148,12 @@ function wireControls() {
   window.addEventListener('keydown', handleKeyDown, { passive: false }); window.addEventListener('keyup', handleKeyUp);
   startButton.addEventListener('click', () => showCharacterSelect('cpu')); trainingButton.addEventListener('click', () => showCharacterSelect('training')); arcadeButton.addEventListener('click', () => showCharacterSelect('arcade')); confirmCharacterButton.addEventListener('click', () => startMatch(selectionMode));
   playerSlotButton.addEventListener('click', () => { selectionTarget = 'player'; renderCharacterSelect(); }); cpuSlotButton.addEventListener('click', () => { selectionTarget = 'cpu'; renderCharacterSelect(); });
+  assistButton.addEventListener('click', () => {
+    assistMode = !assistMode;
+    assistButton.textContent = `ASSIST: ${assistMode ? 'ON' : 'OFF'}`;
+    assistButton.classList.toggle('is-on', assistMode);
+    assistButton.setAttribute('aria-pressed', String(assistMode));
+  });
   backToTitleButton.addEventListener('click', showTitleScreen);
   audioButton.addEventListener('click', toggleAudio);
   pauseButton.addEventListener('click', togglePause);
