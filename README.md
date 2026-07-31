@@ -1,8 +1,10 @@
-# LUNA OVERDRIVE｜DAYBREAK LAB
+# LUNA OVERDRIVE｜3D DAYBREAK
 
 10人のAIエージェントからキャラクターを選び、昼を奪い合う2D格闘ゲーム。`LUNA SUN CATCH!`で集めた昼を、今度は必殺技に変える。
 
-BUILD 3.0では、対戦を「遊ぶ」だけでなく、フレームを「研究」し、アーケードの進行を「続ける」作品へ拡張しています。
+BUILD 3.5では、対戦を「遊ぶ」だけでなく、フレームを「研究」し、アーケードの進行を「続け」、10人のAIエージェントをリアルタイム3Dで眺めて動かせる作品へ拡張しています。
+
+3D SHOWROOMはブラウザ標準のWebGLだけで動作します。外部API、APIキー、決済処理、従量課金サービスは使用していません。
 
 ## 現在の遊び方
 
@@ -33,6 +35,7 @@ BUILD 3.0では、対戦を「遊ぶ」だけでなく、フレームを「研�
 - **FRAME LAB**：FキーまたはFRAME LABボタンで、トレーニング中にヒットボックス、攻撃判定、STARTUP／ACTIVE／RECOVERYを表示
 - **アーケード進行**：勝利でDAY SHARDSとRUN SCOREを獲得。次の対戦へ一部ゲージを持ち越し、全9戦のクリアを記録
 - **プロフィール**：勝利数、最高コンボ、アーケード制覇数、累積SHARDSをブラウザ内に保存
+- **3D SHOWROOM**：10人のプロシージャル3Dエージェント、ドラッグ視点、A/D移動、J/K/L攻撃、CPU反撃、HP、勝敗表示
 
 ## ビジュアルアセット
 
@@ -48,6 +51,7 @@ BUILD 3.0では、対戦を「遊ぶ」だけでなく、フレームを「研�
 - `assets/ryuga.png`：炎を纏う竜人RYUGAの切り抜き
 - `assets/piko.png`：跳ね回るスライムPIKOの切り抜き
 - `assets/orbis.png`：星片を操る宇宙種族ORBISの切り抜き
+- `showroom3d.js`：追加依存なしで動くWebGL 3D SHOWROOM／DUELランタイム
 
 キャラクター画像はクロマキー生成後にアルファ付きPNGへ変換し、ゲーム内のCanvas描画へ接続しています。
 
@@ -66,4 +70,4 @@ node smoke-test.mjs
 git diff --check
 ```
 
-この作品は外部ライブラリなしのCanvasゲーム。GitHub Pagesでそのまま公開できる構成です。
+この作品は外部ライブラリなしのCanvas／WebGLゲーム。GitHub Pagesでそのまま公開できる構成です。
