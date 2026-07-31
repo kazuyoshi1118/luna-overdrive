@@ -33,12 +33,15 @@ const roundStateEl = document.getElementById('roundState');
 const announcerEl = document.getElementById('announcer');
 const comboReadoutEl = document.getElementById('comboReadout');
 const tipReadoutEl = document.getElementById('tipReadout');
+const frameReadoutEl = document.getElementById('frameReadout');
 const resultPanel = document.getElementById('resultPanel');
 const resultTitle = document.getElementById('resultTitle');
 const resultMessage = document.getElementById('resultMessage');
 const resultHits = document.getElementById('resultHits');
 const resultCombo = document.getElementById('resultCombo');
 const resultGrade = document.getElementById('resultGrade');
+const resultShards = document.getElementById('resultShards');
+const resultScore = document.getElementById('resultScore');
 const shareResultButton = document.getElementById('shareResultButton');
 const nextArcadeButton = document.getElementById('nextArcadeButton');
 const playerHudNameEl = document.getElementById('playerHudName');
@@ -51,6 +54,7 @@ const pauseOverlay = document.getElementById('pauseOverlay');
 const pauseButton = document.getElementById('pauseButton');
 const mobilePauseButton = document.getElementById('mobilePauseButton');
 const audioButton = document.getElementById('audioButton');
+const frameLabButton = document.getElementById('frameLabButton');
 
 const WORLD = { width: 1200, height: 600, ground: 486, gravity: 1900, roundSeconds: 60 };
 const MOVE_SPEED = 315;
@@ -154,8 +158,28 @@ let pausedState = 'playing';
 let audioEnabled = false;
 let audioContext;
 let arcadeIndex = 0;
+let arcadeScore = 0;
+let arcadeBank = 0;
 let gamepadPrevious = {};
 let assistMode = true;
+let frameLab = false;
+
+const PROFILE_KEY = 'luna-overdrive-profile-v3';
+const DEFAULT_PROFILE = { wins: 0, losses: 0, bestCombo: 0, arcadeClears: 0, shards: 0, favorite: 'luna' };
+let profile = loadProfile();
+
+function loadProfile() {
+  try {
+    const saved = JSON.parse(window.localStorage?.getItem(PROFILE_KEY) || 'null');
+    return { ...DEFAULT_PROFILE, ...(saved || {}) };
+  } catch (error) {
+    return { ...DEFAULT_PROFILE };
+  }
+}
+
+function saveProfile() {
+  try { window.localStorage?.setItem(PROFILE_KEY, JSON.stringify(profile)); } catch (error) { /* private browsing can disable storage */ }
+}
 
 function ensureAudio() {
   if (!audioEnabled) return null;
@@ -195,7 +219,7 @@ function toggleAudio() {
 
 async function shareResult() {
   const winner = playerRounds > cpuRounds ? player : cpu;
-  const message = `${winner.name}がLUNA OVERDRIVEで昼を奪った。GRADE ${resultGrade.textContent} / MAX COMBO ${resultCombo.textContent}`;
+  const message = `${winner.name}がLUNA OVERDRIVE 3.0で昼を奪った。GRADE ${resultGrade.textContent} / MAX COMBO ${resultCombo.textContent} / SHARDS ${resultShards.textContent}`;
   const shareData = { title: 'LUNA OVERDRIVE｜DAYBREAK DUEL', text: message, url: window.location.href };
   try {
     if (navigator.share) await navigator.share(shareData);
@@ -304,6 +328,8 @@ function resetMatch() {
   cpuRounds = 0;
   totalHits = 0;
   maxCombo = 0;
+  arcadeScore = 0;
+  arcadeBank = 0;
   roundClock = WORLD.roundSeconds;
   roundStateEl.textContent = 'READY';
   roundNumberEl.textContent = '01';
@@ -311,9 +337,15 @@ function resetMatch() {
   announcerEl.textContent = 'THE SUN IS ONLINE';
   comboReadoutEl.textContent = 'NO COMBO';
   tipReadoutEl.textContent = player.character.tip;
+  frameReadoutEl.textContent = `FRAME LAB: ${frameLab ? 'ON' : 'OFF'}`;
+  frameLabButton.textContent = `FRAME LAB: ${frameLab ? 'ON' : 'OFF'}`;
+  frameLabButton.classList.toggle('is-on', frameLab);
+  frameLabButton.setAttribute('aria-pressed', String(frameLab));
   resultPanel.hidden = true;
   shareResultButton.textContent = 'SHARE RESULT ↗';
   nextArcadeButton.hidden = true;
+  resultShards.textContent = '0';
+  resultScore.textContent = '0';
   rematchButton.textContent = 'REMATCH →';
   titleOverlay.hidden = false;
   titleIntro.hidden = false;
@@ -331,6 +363,8 @@ function resetMatch() {
 function startMatch(selectedMode) {
   mode = selectedMode;
   if (mode === 'arcade') { arcadeIndex = 0; selectedCpuId = ARCADE_ROUTE[arcadeIndex]; }
+  profile.favorite = selectedPlayerId;
+  saveProfile();
   resetMatch();
   titleOverlay.hidden = true;
   document.body.classList.add('is-playing');
@@ -344,6 +378,7 @@ function startRound() {
   cpuBrain = { timer: 0, move: 0, guard: false, jump: false, action: null };
   player = makeFighter('player', selectedPlayerId);
   cpu = makeFighter('cpu', selectedCpuId);
+  if (mode === 'arcade' && arcadeIndex > 0 && round === 1) player.meter = arcadeBank;
   roundClock = WORLD.roundSeconds;
   roundStartedAt = performance.now();
   roundNumberEl.textContent = String(round).padStart(2, '0');
@@ -369,6 +404,16 @@ function showHitConfirm(label) {
   hitConfirm.classList.remove('is-showing');
   void hitConfirm.offsetWidth;
   hitConfirm.classList.add('is-showing');
+}
+
+function toggleFrameLab() {
+  frameLab = !frameLab;
+  frameReadoutEl.textContent = `FRAME LAB: ${frameLab ? 'ON' : 'OFF'}`;
+  frameLabButton.textContent = `FRAME LAB: ${frameLab ? 'ON' : 'OFF'}`;
+  frameLabButton.classList.toggle('is-on', frameLab);
+  frameLabButton.setAttribute('aria-pressed', String(frameLab));
+  if (frameLab && mode !== 'training') showHitConfirm('FRAME LAB / TRAINING推奨');
+  else showHitConfirm(frameLab ? 'FRAME DATA ON' : 'FRAME DATA OFF');
 }
 
 function updateHud() {
@@ -629,6 +674,7 @@ function applyHit(attacker, defender, rawDamage, knockback, hitstun, color, labe
   attacker.maxCombo = Math.max(attacker.maxCombo, attacker.combo);
   maxCombo = Math.max(maxCombo, attacker.maxCombo);
   totalHits += 1;
+  arcadeScore += Math.max(1, Math.round(damage + attacker.combo * 3));
   attacker.meter = Math.min(MAX_METER, attacker.meter + (guarding ? 10 : 18));
   hitstop = guarding ? .035 : (label === 'OVERDRIVE' ? .13 : .065);
   addBurst(defender.x, defender.y - 95, guarding ? '#b8c6ff' : color, guarding ? 5 : 11);
@@ -744,6 +790,19 @@ function endRound(winner) {
   if (mode === 'training') roundTimer = 0;
 }
 
+const VICTORY_LINES = {
+  luna: 'ルナは昼を、勝利ではなく次の創作へ変換した。',
+  neko: 'ネコムシカは勝敗の境界線に、音符を一つ置いた。',
+  kagari: 'カガリの太陽拳が、次のステージへの道を開いた。',
+  mizuki: 'ミズキは静かに波形を閉じ、勝利ログを保存した。',
+  bolt9: 'BOLT-9は勝利を、今日も安全に保管した。',
+  vanta: 'VANTAはルールの余白に、紫の署名を残した。',
+  sylfa: 'SYLFAの風が、敗北の文字を遠くへ飛ばした。',
+  ryuga: 'RYUGAの炎が、昼のコアを再起動した。',
+  piko: 'PIKOは跳ねた。勝利も跳ねた。次はどこへ？',
+  orbis: 'ORBISは軌道を一周し、勝利の座標を記録した。'
+};
+
 function finishMatch() {
   state = 'finished';
   document.body.classList.remove('is-playing');
@@ -751,13 +810,22 @@ function finishMatch() {
   const won = playerRounds > cpuRounds;
   const winner = won ? player : cpu;
   const loser = won ? cpu : player;
+  const earnedShards = won ? (mode === 'arcade' ? 12 + arcadeIndex * 4 : 3) : 0;
+  if (won) {
+    profile.wins += 1;
+    profile.shards += earnedShards;
+    profile.bestCombo = Math.max(profile.bestCombo, maxCombo);
+    if (mode === 'arcade' && arcadeIndex === ARCADE_ROUTE.length - 1) profile.arcadeClears += 1;
+    arcadeBank = mode === 'arcade' ? Math.min(500, Math.floor(player.meter * .35) + 80) : 0;
+  } else profile.losses += 1;
+  saveProfile();
   resultPanel.hidden = false;
   nextArcadeButton.hidden = !(mode === 'arcade' && won && arcadeIndex < ARCADE_ROUTE.length - 1);
   resultTitle.textContent = won ? `${winner.name} WINS THE DAY` : `${winner.name} REWRITES THE RULES`;
-  resultMessage.textContent = won ? `${winner.character.tip} 次の指令を受け付けます。` : `${loser.name}も、ここから進化する。もう一度、昼を取り戻そう。`;
+  resultMessage.textContent = won ? `${VICTORY_LINES[winner.characterId] || winner.character.tip} SHARDS +${earnedShards}` : `${loser.name}も、ここから進化する。もう一度、昼を取り戻そう。`;
   if (mode === 'arcade' && won && arcadeIndex < ARCADE_ROUTE.length - 1) {
     resultTitle.textContent = `${winner.name} CLEARS THE SECTOR`;
-    resultMessage.textContent = `NEXT OPPONENT：${CHARACTER_ROSTER[ARCADE_ROUTE[arcadeIndex + 1]].name}。昼はまだ続く。`;
+    resultMessage.textContent = `NEXT OPPONENT：${CHARACTER_ROSTER[ARCADE_ROUTE[arcadeIndex + 1]].name}。DAY SHARD BANK +${arcadeBank}。`;
     rematchButton.textContent = 'RESTART RUN →';
   } else if (mode === 'arcade' && won) {
     resultTitle.textContent = 'ARCADE RUN CLEAR';
@@ -770,6 +838,8 @@ function finishMatch() {
   resultHits.textContent = String(totalHits);
   resultCombo.textContent = String(maxCombo);
   resultGrade.textContent = won && maxCombo >= 8 ? 'SS' : won ? 'A' : maxCombo >= 5 ? 'B' : 'C';
+  resultShards.textContent = String(profile.shards);
+  resultScore.textContent = String(arcadeScore);
   roundStateEl.textContent = won ? 'CLEAR' : 'RETRY';
   announcerEl.textContent = 'MATCH REPORT READY';
   pauseOverlay.hidden = true;
@@ -816,7 +886,55 @@ function drawScene(now) {
   drawSuperFlash(now);
   drawProjectiles();
   drawFighter(player, now); drawFighter(cpu, now);
+  if (frameLab) drawFrameLabOverlay();
+  if (state === 'finished') drawVictorySeal(now);
   drawParticles(); drawFloatingText();
+}
+
+function drawFrameLabOverlay() {
+  ctx.save();
+  ctx.font = '900 13px Inter, sans-serif';
+  ctx.lineWidth = 3;
+  [player, cpu].forEach((fighter) => {
+    if (!fighter) return;
+    const hurt = bodyBox(fighter);
+    ctx.strokeStyle = fighter.side === 'player' ? '#72dcff' : '#ff668d';
+    ctx.strokeRect(hurt.x, hurt.y, hurt.w, hurt.h);
+    let phase = fighter.attack ? 'RECOVERY' : fighter.guard ? 'BLOCK' : 'NEUTRAL';
+    let frame = 0;
+    if (fighter.attack) {
+      const move = fighter.attack.move;
+      const elapsed = fighter.attack.elapsed;
+      frame = Math.floor(elapsed / 16.67);
+      phase = elapsed < move.startup ? 'STARTUP' : elapsed <= move.startup + move.active ? 'ACTIVE' : 'RECOVERY';
+      if (!move.projectile) {
+        const hit = meleeBox(fighter, move);
+        ctx.strokeStyle = phase === 'ACTIVE' ? '#fff0a7' : fighter.character.accent;
+        ctx.globalAlpha = phase === 'ACTIVE' ? .95 : .48;
+        ctx.strokeRect(hit.x, hit.y, hit.w, hit.h);
+        ctx.globalAlpha = 1;
+      }
+    }
+    ctx.fillStyle = fighter.side === 'player' ? '#d9f8ff' : '#ffe2ed';
+    ctx.textAlign = fighter.side === 'player' ? 'left' : 'right';
+    ctx.fillText(`${fighter.name} / ${phase} / ${frame}f`, fighter.side === 'player' ? hurt.x : hurt.x + hurt.w, hurt.y - 10);
+  });
+  ctx.restore();
+}
+
+function drawVictorySeal(now) {
+  const winner = playerRounds > cpuRounds ? player : cpu;
+  if (!winner) return;
+  ctx.save();
+  ctx.translate(winner.x, winner.y - 245);
+  ctx.globalAlpha = .72 + Math.sin(now * .006) * .12;
+  ctx.strokeStyle = winner.character.accent;
+  ctx.shadowColor = winner.character.accent;
+  ctx.shadowBlur = 20;
+  ctx.lineWidth = 4;
+  ctx.beginPath(); ctx.arc(0, 0, 35 + Math.sin(now * .008) * 3, 0, Math.PI * 2); ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = '950 13px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('DAY CLEAR', 0, 5);
+  ctx.restore();
 }
 
 function drawCoverImage(image, x, y, width, height) {
@@ -1138,6 +1256,7 @@ function loop(now) {
 function handleKeyDown(event) {
   const key = event.key.toLowerCase();
   if (audioEnabled) ensureAudio();
+  if (key === 'f') { event.preventDefault(); toggleFrameLab(); return; }
   if (key === 'p') { event.preventDefault(); togglePause(); return; }
   if (['a', 'd', 'w', 's', 'e', 'j', 'k', 'l', 'i', 'u', 'o'].includes(key)) { event.preventDefault(); if (!keys.has(key)) { justPressed.add(key); if ((key === 'a' || key === 'd') && performance.now() - lastDirectionPress[key] < 240) justPressed.add(key === 'a' ? 'dashLeft' : 'dashRight'); if (key === 'a' || key === 'd') lastDirectionPress[key] = performance.now(); } keys.add(key); }
   if (key === 'enter' && state === 'menu') showCharacterSelect('cpu');
@@ -1156,6 +1275,7 @@ function wireControls() {
   });
   backToTitleButton.addEventListener('click', showTitleScreen);
   audioButton.addEventListener('click', toggleAudio);
+  frameLabButton.addEventListener('click', toggleFrameLab);
   pauseButton.addEventListener('click', togglePause);
   mobilePauseButton.addEventListener('click', togglePause);
   shareResultButton.addEventListener('click', shareResult); nextArcadeButton.addEventListener('click', nextArcadeFight);
