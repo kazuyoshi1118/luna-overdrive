@@ -63,7 +63,7 @@ const context = {
 };
 
 vm.createContext(context);
-vm.runInContext(`${source}\n;globalThis.__test = { order: ROSTER_ORDER, chooseCharacter, showCharacterSelect, makeFighter, getMoveFor, triggerAction, updateFighter, startMatch, tick, togglePause, getState: () => state, getMode: () => mode, getArcadeOpponent: () => selectedCpuId, getCpuX: () => cpu?.x };`, context);
+vm.runInContext(`${source}\n;globalThis.__test = { order: ROSTER_ORDER, chooseCharacter, showCharacterSelect, makeFighter, getMoveFor, triggerAction, triggerAssistCombo, triggerDriveBurst, applyHit, updateFighter, startMatch, tick, togglePause, getState: () => state, getMode: () => mode, getArcadeOpponent: () => selectedCpuId, getCpuX: () => cpu?.x };`, context);
 const test = context.__test;
 
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
@@ -74,6 +74,7 @@ for (const id of test.order) {
   const rosterFighter = test.makeFighter('player', id);
   assert(test.getMoveFor(rosterFighter, 'l').label, `${id} special label missing`);
   assert(test.getMoveFor(rosterFighter, 'i').label, `${id} overdrive label missing`);
+  assert(test.getMoveFor(rosterFighter, 'u').label === 'THROW', `${id} throw missing`);
   assert(test.getMoveFor(rosterFighter, 'l').visual !== 'energy', `${id} projectile visual missing`);
 }
 test.chooseCharacter('bolt9');
@@ -101,6 +102,33 @@ cancelFighter.attack.elapsed = 220;
 cancelFighter.inputBuffer = { key: 'k', ttl: .2 };
 test.updateFighter(cancelFighter, cancelOpponent, { left: false, right: false, jump: false, guard: false }, .01);
 assert(cancelFighter.attack?.move.label === 'HEAVY', 'confirmed hit should cancel into the buffered attack');
+
+const assistFighter = test.makeFighter('player', 'luna');
+assert(test.triggerAssistCombo(assistFighter), 'assist combo should start for beginners');
+assistFighter.attack.hitDone = true;
+assistFighter.attack.elapsed = 220;
+test.updateFighter(assistFighter, test.makeFighter('cpu', 'neko'), { left: false, right: false, jump: false, guard: false }, .01);
+assert(assistFighter.attack?.move.label === 'HEAVY', 'assist combo should chain into heavy');
+
+const parryDefender = test.makeFighter('player', 'luna');
+const parryAttacker = test.makeFighter('cpu', 'neko');
+parryDefender.guard = true;
+parryDefender.parryTimer = .1;
+const parryHealth = parryDefender.health;
+test.applyHit(parryAttacker, parryDefender, 100, 160, 300, '#fff0a7', 'HEAVY');
+assert(parryDefender.health === parryHealth && parryAttacker.blockstun > 0, 'parry should steal the attacker turn without taking damage');
+
+const throwAttacker = test.makeFighter('player', 'luna');
+const throwDefender = test.makeFighter('cpu', 'neko');
+throwDefender.guard = true;
+test.applyHit(throwAttacker, throwDefender, 120, 300, 500, '#ffe07a', 'THROW');
+assert(throwDefender.health < throwDefender.character.health, 'throw should beat a standing guard');
+
+const burstFighter = test.makeFighter('player', 'luna');
+burstFighter.meter = 300;
+burstFighter.hitstun = 240;
+assert(test.triggerDriveBurst(burstFighter), 'drive burst should escape hitstun with meter');
+assert(burstFighter.attack?.move.label === 'DRIVE BURST' && burstFighter.driveInvuln > 0, 'drive burst should grant a brief invulnerable reversal');
 
 test.startMatch('training');
 timers.at(-1)?.();
