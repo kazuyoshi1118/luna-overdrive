@@ -165,7 +165,9 @@ assert(test.getFrameLab() === false, 'frame lab should toggle off');
 const indexHtml = fs.readFileSync(new URL('./index.html', import.meta.url), 'utf8');
 const showroomSource = fs.readFileSync(new URL('./showroom3d.js', import.meta.url), 'utf8');
 assert(indexHtml.includes('id="showroomCanvas"') && indexHtml.includes('id="showroomButton"'), '3D showroom shell missing');
+assert(indexHtml.includes('data-3d-key="a"') && indexHtml.includes('showroomPlayerHealthBar'), '3D mobile controls or health HUD missing');
 assert(indexHtml.includes('showroom3d.js?v=35'), '3D runtime cache version missing');
 assert(showroomSource.includes("getContext('webgl'") && showroomSource.includes('drawArena') && showroomSource.includes('LUNA_SHOWROOM'), 'WebGL showroom runtime missing');
+assert(showroomSource.includes('column-major') && showroomSource.includes('cameraShake') && showroomSource.includes('addEffect'), '3D render and battle feedback fix missing');
 
 console.log('LUNA OVERDRIVE smoke test passed: roster, selection, tuning, projectile visual, super, pause, dash, arcade route, frame lab');
