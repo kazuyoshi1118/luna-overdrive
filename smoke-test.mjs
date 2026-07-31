@@ -63,7 +63,7 @@ const context = {
 };
 
 vm.createContext(context);
-vm.runInContext(`${source}\n;globalThis.__test = { order: ROSTER_ORDER, chooseCharacter, showCharacterSelect, makeFighter, getMoveFor, triggerAction, triggerAssistCombo, triggerDriveBurst, applyHit, updateFighter, startMatch, tick, togglePause, getState: () => state, getMode: () => mode, getArcadeOpponent: () => selectedCpuId, getCpuX: () => cpu?.x };`, context);
+vm.runInContext(`${source}\n;globalThis.__test = { order: ROSTER_ORDER, chooseCharacter, showCharacterSelect, makeFighter, getMoveFor, triggerAction, triggerAssistCombo, triggerDriveBurst, applyHit, updateFighter, startMatch, tick, togglePause, toggleFrameLab, getState: () => state, getMode: () => mode, getArcadeOpponent: () => selectedCpuId, getCpuX: () => cpu?.x, getFrameLab: () => frameLab };`, context);
 const test = context.__test;
 
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
@@ -156,4 +156,10 @@ timers.at(-1)?.();
 assert(test.getMode() === 'arcade', 'arcade mode should be selectable');
 assert(test.getArcadeOpponent() === 'neko', 'arcade route should begin with NEKOMUSICA');
 
-console.log('LUNA OVERDRIVE smoke test passed: roster, selection, tuning, projectile visual, super, pause, dash, arcade route');
+assert(test.getFrameLab() === false, 'frame lab should begin disabled');
+test.toggleFrameLab();
+assert(test.getFrameLab() === true, 'frame lab should toggle on');
+test.toggleFrameLab();
+assert(test.getFrameLab() === false, 'frame lab should toggle off');
+
+console.log('LUNA OVERDRIVE smoke test passed: roster, selection, tuning, projectile visual, super, pause, dash, arcade route, frame lab');
