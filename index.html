@@ -63,7 +63,7 @@
               <button class="btn btn-ghost" id="trainingButton" type="button">TRAINING MODE</button>
               <button class="btn btn-ghost" id="arcadeButton" type="button">ARCADE RUN <span>↗</span></button>
             </div>
-            <p class="title-note">J / K / L / I で攻撃　・　AA / DD でダッシュ　・　ゲームパッド対応</p>
+            <p class="title-note">ASSISTならEで連携　・　SでPARRY　・　Uで投げ　・　OでBURST　・　ゲームパッド対応</p>
           </div>
           <div class="character-select" id="characterSelectPanel" hidden>
             <p class="select-kicker">SELECT YOUR AGENT / ROSTER 10</p>
@@ -75,7 +75,7 @@
             </div>
             <div class="character-grid" id="characterGrid"></div>
             <div class="selection-detail" id="selectionDetail" aria-live="polite"><div><small>SELECTED AGENT</small><strong id="selectionDetailName">LUNA</strong><span id="selectionDetailTitle">THE DAYBREAK AGENT / BALANCED</span></div><div class="selection-moves"><span><b>SPECIAL</b><strong id="selectionDetailSpecial">DAYBREAK</strong></span><span><b>OVERDRIVE</b><strong id="selectionDetailSuper">LUNA OVERDRIVE</strong></span></div></div>
-            <div class="select-actions"><button class="btn btn-ghost select-back" id="backToTitleButton" type="button">← BACK</button><span class="selection-hint">YOU / CPUを選択して、対戦カードを決める</span><button class="btn btn-primary" id="confirmCharacterButton" type="button">BEGIN FIGHT <span>→</span></button></div>
+            <div class="select-actions"><button class="btn btn-ghost select-back" id="backToTitleButton" type="button">← BACK</button><button class="btn btn-ghost assist-toggle is-on" id="assistButton" type="button" aria-pressed="true">ASSIST: ON</button><span class="selection-hint">YOU / CPUを選択して、対戦カードを決める</span><button class="btn btn-primary" id="confirmCharacterButton" type="button">BEGIN FIGHT <span>→</span></button></div>
           </div>
         </div>
         <div class="fight-banner" id="fightBanner" aria-live="polite"></div>
@@ -88,11 +88,11 @@
     <section class="control-strip">
       <div class="control-card">
         <span class="control-label">MOVE</span>
-        <div class="key-row"><kbd>A</kbd><kbd>D</kbd><span>歩く</span><kbd>A A</kbd><span>ダッシュ</span><kbd>W</kbd><span>ジャンプ</span><kbd>S</kbd><span>ガード</span><kbd>P</kbd><span>一時停止</span></div>
+        <div class="key-row"><kbd>A</kbd><kbd>D</kbd><span>歩く</span><kbd>A A</kbd><span>ダッシュ</span><kbd>W</kbd><span>ジャンプ</span><kbd>S</kbd><span>ガード / PARRY</span><kbd>U</kbd><span>投げ</span><kbd>O</kbd><span>BURST</span><kbd>P</kbd><span>一時停止</span></div>
       </div>
       <div class="control-card attack-legend">
-        <span class="control-label">ATTACK</span>
-        <div class="key-row"><kbd class="light">J</kbd><span>LIGHT</span><kbd class="heavy">K</kbd><span>HEAVY</span><kbd class="special">L</kbd><span>SPECIAL</span><kbd class="super">I</kbd><span>OVERDRIVE</span></div>
+        <span class="control-label">ATTACK / MODERN INPUT</span>
+        <div class="key-row"><kbd class="light">J</kbd><span>LIGHT</span><kbd class="heavy">K</kbd><span>HEAVY</span><kbd class="special">L</kbd><span>SPECIAL</span><kbd class="super">I</kbd><span>OVERDRIVE</span><kbd class="assist">E</kbd><span>ASSIST COMBO</span></div>
       </div>
       <button class="btn btn-reset btn-pause" id="pauseButton" type="button">PAUSE</button>
       <button class="btn btn-reset" id="resetButton" type="button">RESET MATCH</button>
@@ -100,7 +100,7 @@
 
     <section class="mobile-controls" aria-label="タッチ操作">
       <div class="d-pad"><button data-key="a" type="button">◀</button><button data-key="s" type="button">◆</button><button data-key="d" type="button">▶</button><button data-key="w" type="button">▲</button></div><button class="mobile-pause" id="mobilePauseButton" type="button">Ⅱ<br><small>PAUSE</small></button>
-      <div class="mobile-attacks"><button data-key="j" class="light" type="button">J<br><small>LIGHT</small></button><button data-key="k" class="heavy" type="button">K<br><small>HEAVY</small></button><button data-key="l" class="special" type="button">L<br><small>SPECIAL</small></button><button data-key="i" class="super" type="button">I<br><small>OVERDRIVE</small></button></div>
+      <div class="mobile-action-stack"><div class="mobile-attacks"><button data-key="j" class="light" type="button">J<br><small>LIGHT</small></button><button data-key="k" class="heavy" type="button">K<br><small>HEAVY</small></button><button data-key="l" class="special" type="button">L<br><small>SPECIAL</small></button><button data-key="i" class="super" type="button">I<br><small>OVERDRIVE</small></button></div><div class="mobile-utility"><button data-key="e" class="assist" type="button">E ASSIST</button><button data-key="u" class="throw" type="button">U THROW</button><button data-key="o" class="burst" type="button">O BURST</button></div></div>
     </section>
 
     <section class="result-panel" id="resultPanel" hidden>
