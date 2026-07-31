@@ -116,6 +116,7 @@ const CHARACTER_ROSTER = {
   orbis: { id: 'orbis', name: 'ORBIS', title: 'THE STAR DRIFTER', role: 'COSMIC', assetKey: 'orbis', accent: '#b99aff', health: 910, speed: 310, jump: 860, stats: [3, 3, 5, 2], tip: 'ORBIS TIP：軌道をずらして、星片の角度で詰ませる。', moveTuning: { j: { damage: 46, range: 105 }, k: { damage: 104, range: 145 }, l: { label: 'ORBIT LANCE', damage: 185, range: 310, color: '#b99aff' }, i: { label: 'ECLIPSE LOOP', damage: 350, range: 330, color: '#b99aff' } } }
 };
 const ROSTER_ORDER = Object.keys(CHARACTER_ROSTER);
+globalThis.LUNA_ROSTER = CHARACTER_ROSTER;
 const PROJECTILE_STYLES = { luna: 'sun', neko: 'glitch', kagari: 'rush', mizuki: 'wave', bolt9: 'magnet', vanta: 'hex', sylfa: 'wind', ryuga: 'flame', piko: 'blob', orbis: 'orbit' };
 const ARCADE_ROUTE = ['neko', 'kagari', 'mizuki', 'bolt9', 'vanta', 'ryuga', 'sylfa', 'piko', 'orbis'];
 const CPU_STYLES = {
