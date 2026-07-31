@@ -162,4 +162,10 @@ assert(test.getFrameLab() === true, 'frame lab should toggle on');
 test.toggleFrameLab();
 assert(test.getFrameLab() === false, 'frame lab should toggle off');
 
+const indexHtml = fs.readFileSync(new URL('./index.html', import.meta.url), 'utf8');
+const showroomSource = fs.readFileSync(new URL('./showroom3d.js', import.meta.url), 'utf8');
+assert(indexHtml.includes('id="showroomCanvas"') && indexHtml.includes('id="showroomButton"'), '3D showroom shell missing');
+assert(indexHtml.includes('showroom3d.js?v=35'), '3D runtime cache version missing');
+assert(showroomSource.includes("getContext('webgl'") && showroomSource.includes('drawArena') && showroomSource.includes('LUNA_SHOWROOM'), 'WebGL showroom runtime missing');
+
 console.log('LUNA OVERDRIVE smoke test passed: roster, selection, tuning, projectile visual, super, pause, dash, arcade route, frame lab');
