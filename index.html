@@ -93,13 +93,16 @@
       </div>
       <div class="showroom-frame">
         <canvas id="showroomCanvas" class="showroom-canvas" aria-label="ルナとAIエージェントが立つ3Dショールーム"></canvas>
+        <div class="showroom-healthbar player"><span>YOU <b id="showroomPlayerHp">100</b></span><i><em id="showroomPlayerHealthBar"></em></i></div>
+        <div class="showroom-healthbar cpu"><span>CPU <b id="showroomCpuHp">100</b></span><i><em id="showroomCpuHealthBar"></em></i></div>
         <div class="showroom-overlay"><span id="showroomCaption">LUNA / THE DAYBREAK AGENT</span><span>DRAG TO ORBIT　・　A / D MOVE　・　J / K / L ATTACK</span></div>
       </div>
       <div class="showroom-toolbar">
         <div><span class="control-label">3D AGENT SELECT</span><div class="showroom-roster" id="showroomRoster"></div></div>
-        <div class="showroom-stats"><span>PLAYER HP <b id="showroomPlayerHp">100</b></span><span>CPU HP <b id="showroomCpuHp">100</b></span><span>CAMERA <b id="showroomCameraReadout">ORBIT 0°</b></span></div>
+        <div class="showroom-stats"><span>CAMERA <b id="showroomCameraReadout">ORBIT 0°</b></span><span>RULE <b>BEST OF 1</b></span></div>
         <div class="showroom-actions"><button class="btn btn-ghost" id="showroomResetButton" type="button">RESET 3D DUEL</button><button class="btn btn-primary" id="showroomBackButton" type="button">← BACK TO 2D</button></div>
       </div>
+      <div class="showroom-mobile-controls" aria-label="3Dデュエル操作"><div class="showroom-mobile-move"><button data-3d-key="a" type="button">◀</button><button data-3d-key="d" type="button">▶</button></div><div class="showroom-mobile-attacks"><button data-3d-key="j" type="button">J<br><small>LIGHT</small></button><button data-3d-key="k" type="button">K<br><small>HEAVY</small></button><button data-3d-key="l" type="button">L<br><small>SPECIAL</small></button></div></div>
     </section>
 
     <section class="control-strip">
