@@ -11,7 +11,7 @@
   <meta property="og:image" content="assets/overdrive-stage.png">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="style.css?v=36">
+  <link rel="stylesheet" href="style.css?v=46">
   <title>LUNA OVERDRIVE｜DAYBREAK DUEL</title>
 </head>
 <body>
@@ -23,7 +23,7 @@
         <p class="tagline">昼を守るのは、ルナか。ネコムシカか。</p>
       </div>
       <div class="header-right">
-        <span class="build-badge">BUILD 3.5 / 3D DAYBREAK</span>
+        <span class="build-badge">BUILD 3.29 / MATCH REPORT</span>
         <button class="btn btn-ghost audio-toggle" id="audioButton" type="button" aria-pressed="false">SOUND: OFF</button>
         <a href="https://kazuyoshi1118.github.io/luna-sun-catch/" target="_blank" rel="noreferrer">前作を遊ぶ ↗</a>
       </div>
@@ -64,7 +64,7 @@
               <button class="btn btn-ghost" id="arcadeButton" type="button">ARCADE RUN <span>↗</span></button>
               <button class="btn btn-3d" id="showroomButton" type="button">3D SHOWROOM <span>↗</span></button>
             </div>
-            <p class="title-note">ASSISTならEで連携　・　SでPARRY　・　Uで投げ　・　OでBURST　・　3D SHOWROOMでキャラを動かす</p>
+      <p class="title-note">NでLOW　・　MでOVERHEAD　・　Cでしゃがみ／S+Cでしゃがみガード　・　W後のJ/Kで空中攻撃　・　Sでガード／PARRY　・　投げ同時入力でTHROW TECH</p>
           </div>
           <div class="character-select" id="characterSelectPanel" hidden>
             <p class="select-kicker">SELECT YOUR AGENT / ROSTER 10</p>
@@ -76,57 +76,83 @@
             </div>
             <div class="character-grid" id="characterGrid"></div>
             <div class="selection-detail" id="selectionDetail" aria-live="polite"><div><small>SELECTED AGENT</small><strong id="selectionDetailName">LUNA</strong><span id="selectionDetailTitle">THE DAYBREAK AGENT / BALANCED</span></div><div class="selection-moves"><span><b>SPECIAL</b><strong id="selectionDetailSpecial">DAYBREAK</strong></span><span><b>OVERDRIVE</b><strong id="selectionDetailSuper">LUNA OVERDRIVE</strong></span></div></div>
+            <div class="select-options"><label class="difficulty-control" for="difficultySelect"><span>CPU DIFFICULTY</span><select id="difficultySelect"><option value="easy">EASY / 予兆あり</option><option value="normal">NORMAL / STANDARD</option><option value="hard">HARD / AGGRESSIVE</option></select></label><span class="training-note" id="trainingNote">TRAINING：CPU停止・Fで判定表示・Rでダミーリセット</span></div>
             <div class="select-actions"><button class="btn btn-ghost select-back" id="backToTitleButton" type="button">← BACK</button><button class="btn btn-ghost assist-toggle is-on" id="assistButton" type="button" aria-pressed="true">ASSIST: ON</button><span class="selection-hint">YOU / CPUを選択して、対戦カードを決める</span><button class="btn btn-primary" id="confirmCharacterButton" type="button">BEGIN FIGHT <span>→</span></button></div>
           </div>
         </div>
         <div class="fight-banner" id="fightBanner" aria-live="polite"></div>
         <div class="hit-confirm" id="hitConfirm"></div>
+        <div class="combat-readout" aria-live="polite"><span id="inputReadout">INPUT: --</span><span id="routeReadout">ROUTE: J→K→L</span><span id="threatReadout">CPU: READY</span><span id="hitDirectionReadout">HIT DIRECTION: --</span><span id="frameAdvantageReadout">FRAME ADVANTAGE: --</span></div>
         <div class="pause-overlay" id="pauseOverlay" hidden><strong>PAUSED</strong><span>Pで再開</span></div>
       </div>
-      <div class="stage-bottomline"><span id="comboReadout">NO COMBO</span><span id="tipReadout">LUNA TIP：ゲージを溜めて、Lで昼の必殺技。</span><span id="frameReadout">FRAME LAB: OFF</span><span id="fpsReadout">60 FPS</span></div>
+      <div class="stage-bottomline"><span id="comboReadout">NO COMBO</span><span id="tipReadout">LUNA TIP：ゲージを溜めて、Lで昼の必殺技。</span><span id="frameReadout">FRAME LAB: OFF</span><span id="trialReadout">TRIAL: OFF</span><span id="fpsReadout">60 FPS</span></div>
     </section>
 
     <section class="showroom-panel" id="showroomPanel" hidden>
       <div class="showroom-header">
-        <div><p class="kicker">REALTIME WEBGL / BUILD 3.5</p><h2>DAYBREAK 3D SHOWROOM</h2><p>ルナたちは、平面から出てきた。</p></div>
+        <div><p class="kicker">REALTIME WEBGL / BUILD 3.29</p><h2>DAYBREAK 3D SHOWROOM</h2><p>ルナたちは、平面から出てきた。</p></div>
         <div class="showroom-badge" id="showroomStatus">WEBGL ONLINE / IDLE</div>
       </div>
       <div class="showroom-frame">
         <canvas id="showroomCanvas" class="showroom-canvas" aria-label="ルナとAIエージェントが立つ3Dショールーム"></canvas>
         <div class="showroom-healthbar player"><span>YOU <b id="showroomPlayerHp">100</b></span><i><em id="showroomPlayerHealthBar"></em></i></div>
         <div class="showroom-healthbar cpu"><span>CPU <b id="showroomCpuHp">100</b></span><i><em id="showroomCpuHealthBar"></em></i></div>
-        <div class="showroom-overlay"><span id="showroomCaption">LUNA / THE DAYBREAK AGENT</span><span>DRAG TO ORBIT　・　A / D MOVE　・　J / K / L ATTACK</span></div>
+        <div class="showroom-meter player"><span>DRIVE <b id="showroomPlayerMeterValue">0</b></span><i><em id="showroomPlayerMeter"></em></i></div>
+        <div class="showroom-meter cpu"><span>DRIVE <b id="showroomCpuMeterValue">0</b></span><i><em id="showroomCpuMeter"></em></i></div>
+        <div class="showroom-combo player" id="showroomPlayerCombo" aria-live="polite"></div><div class="showroom-combo cpu" id="showroomCpuCombo" aria-live="polite"></div>
+        <div class="showroom-fight-banner" id="showroomFightBanner" aria-live="polite"></div>
+        <div class="showroom-result-card" id="showroomResultCard" hidden>
+          <p class="kicker">3D MATCH REPORT / LOCAL LOG SAVED</p>
+          <h3 id="showroomResultTitle">LUNA WINS / 3D CLEAR</h3>
+          <p id="showroomResultMessage">勝敗とフレームログを保存しました。</p>
+          <div><button class="btn btn-primary" id="showroomResultRematchButton" type="button">REMATCH</button><button class="btn btn-ghost" id="showroomResultBackButton" type="button">BACK TO 2D</button></div>
+        </div>
+        <div class="showroom-overlay"><span id="showroomCaption">LUNA / THE DAYBREAK AGENT</span><span>DRAG TO ORBIT　・　A / D MOVE　・　W JUMP / QUICK RISE　・　S GUARD / C CROUCH　・　A・D ROLL　・　N LOW / M OVERHEAD / U THROW　・　J / K / L ATTACK</span></div>
       </div>
       <div class="showroom-toolbar">
         <div><span class="control-label">3D AGENT SELECT</span><div class="showroom-roster" id="showroomRoster"></div></div>
-        <div class="showroom-stats"><span>CAMERA <b id="showroomCameraReadout">ORBIT 0°</b></span><span>RULE <b>BEST OF 1</b></span></div>
-        <div class="showroom-actions"><button class="btn btn-ghost" id="showroomResetButton" type="button">RESET 3D DUEL</button><button class="btn btn-primary" id="showroomBackButton" type="button">← BACK TO 2D</button></div>
+        <div class="showroom-stats"><span>CAMERA <b id="showroomCameraReadout">ORBIT 0°</b></span><span>ROUND <b id="showroomRoundReadout">01 / FIRST TO TWO</b></span><span>FRAME DATA <b id="showroomFrameReadout">LAST CONTACT / --</b></span><span>FIGHT LOG <b id="showroomLogReadout">0 EVENTS / LOCAL</b></span></div>
+        <div class="showroom-actions"><button class="btn btn-ghost" id="showroomResetButton" type="button">RESET 3D DUEL</button><button class="btn btn-ghost" id="showroomTrainingButton" type="button" aria-pressed="false">3D TRAINING: OFF</button><button class="btn btn-ghost" id="showroomDummyGuardButton" type="button" aria-pressed="false" disabled>DUMMY GUARD: OFF</button><button class="btn btn-ghost" id="showroomDummyCrouchButton" type="button" aria-pressed="false" disabled>DUMMY CROUCH: OFF</button><button class="btn btn-ghost" id="showroomPunishDrillButton" type="button" aria-pressed="false" disabled>3D PUNISH DRILL: OFF</button><button class="btn btn-ghost" id="showroomMixupDrillButton" type="button" aria-pressed="false" disabled>3D MIXUP DRILL: OFF</button><button class="btn btn-ghost" id="showroomFrameLabButton" type="button" aria-pressed="false">3D FRAME LAB: OFF</button><button class="btn btn-ghost" id="showroomSoundButton" type="button" aria-pressed="false">SOUND: OFF</button><button class="btn btn-primary" id="showroomBackButton" type="button">← BACK TO 2D</button></div>
       </div>
-      <div class="showroom-mobile-controls" aria-label="3Dデュエル操作"><div class="showroom-mobile-move"><button data-3d-key="a" type="button">◀</button><button data-3d-key="d" type="button">▶</button></div><div class="showroom-mobile-attacks"><button data-3d-key="j" type="button">J<br><small>LIGHT</small></button><button data-3d-key="k" type="button">K<br><small>HEAVY</small></button><button data-3d-key="l" type="button">L<br><small>SPECIAL</small></button></div></div>
+      <details class="showroom-log-panel" id="showroomLogPanel"><summary>OPEN 3D FIGHT LOG <span id="showroomLogSummary">LOCAL ONLY / 0 EVENTS</span></summary><ol id="showroomLogTimeline"></ol></details>
+      <div class="showroom-mobile-controls" aria-label="3Dデュエル操作"><div class="showroom-mobile-move"><button data-3d-key="a" type="button">◀<br><small>ROLL</small></button><button data-3d-key="d" type="button">▶<br><small>ROLL</small></button><button data-3d-key="w" type="button">W<br><small>JUMP / RISE</small></button><button data-3d-key="s" type="button">◆<br><small>GUARD</small></button><button data-3d-key="c" type="button">C<br><small>CROUCH</small></button></div><div class="showroom-mobile-attacks"><button data-3d-key="j" type="button">J<br><small>LIGHT / AIR</small></button><button data-3d-key="k" type="button">K<br><small>HEAVY / AIR</small></button><button data-3d-key="n" type="button">N<br><small>LOW</small></button><button data-3d-key="m" type="button">M<br><small>OVERHEAD</small></button><button data-3d-key="u" type="button">U<br><small>THROW</small></button><button data-3d-key="l" type="button">L<br><small>SPECIAL</small></button></div></div>
     </section>
 
     <section class="control-strip">
       <div class="control-card">
         <span class="control-label">MOVE</span>
-        <div class="key-row"><kbd>A</kbd><kbd>D</kbd><span>歩く</span><kbd>A A</kbd><span>ダッシュ</span><kbd>W</kbd><span>ジャンプ</span><kbd>S</kbd><span>ガード / PARRY</span><kbd>U</kbd><span>投げ</span><kbd>O</kbd><span>BURST</span><kbd>P</kbd><span>一時停止</span></div>
+        <div class="key-row"><kbd>A</kbd><kbd>D</kbd><span>歩く</span><kbd>A A</kbd><span>ダッシュ</span><kbd>W</kbd><span>ジャンプ</span><kbd>C</kbd><span>しゃがみ</span><kbd>S+C</kbd><span>しゃがみガード</span><kbd>S</kbd><span>ガード / PARRY</span><kbd>U</kbd><span>投げ / TECH</span><kbd>O</kbd><span>BURST</span><kbd>P</kbd><span>一時停止</span></div>
       </div>
       <div class="control-card attack-legend">
         <span class="control-label">ATTACK / MODERN INPUT</span>
-        <div class="key-row"><kbd class="light">J</kbd><span>LIGHT</span><kbd class="heavy">K</kbd><span>HEAVY</span><kbd class="special">L</kbd><span>SPECIAL</span><kbd class="super">I</kbd><span>OVERDRIVE</span><kbd class="assist">E</kbd><span>ASSIST COMBO</span></div>
+        <div class="key-row"><kbd class="light">J</kbd><span>LIGHT</span><kbd class="heavy">K</kbd><span>HEAVY</span><kbd class="low">N</kbd><span>LOW</span><kbd class="overhead">M</kbd><span>OVERHEAD</span><kbd class="special">L</kbd><span>SPECIAL</span><kbd class="super">I</kbd><span>OVERDRIVE</span><kbd class="assist">E</kbd><span>ASSIST COMBO</span></div>
       </div>
       <button class="btn btn-reset btn-pause" id="pauseButton" type="button">PAUSE</button>
       <button class="btn btn-reset frame-lab-toggle" id="frameLabButton" type="button" aria-pressed="false">FRAME LAB: OFF</button>
+      <button class="btn btn-reset" id="punishDrillButton" type="button" hidden>PUNISH DRILL</button>
+      <button class="btn btn-reset" id="mixupDrillButton" type="button" hidden>MIXUP DRILL</button>
+      <button class="btn btn-reset" id="characterTrialButton" type="button" hidden>CHARACTER TRIAL</button>
       <button class="btn btn-reset" id="resetButton" type="button">RESET MATCH</button>
     </section>
 
     <section class="mobile-controls" aria-label="タッチ操作">
       <div class="d-pad"><button data-key="a" type="button">◀</button><button data-key="s" type="button">◆</button><button data-key="d" type="button">▶</button><button data-key="w" type="button">▲</button></div><button class="mobile-pause" id="mobilePauseButton" type="button">Ⅱ<br><small>PAUSE</small></button>
-      <div class="mobile-action-stack"><div class="mobile-attacks"><button data-key="j" class="light" type="button">J<br><small>LIGHT</small></button><button data-key="k" class="heavy" type="button">K<br><small>HEAVY</small></button><button data-key="l" class="special" type="button">L<br><small>SPECIAL</small></button><button data-key="i" class="super" type="button">I<br><small>OVERDRIVE</small></button></div><div class="mobile-utility"><button data-key="e" class="assist" type="button">E ASSIST</button><button data-key="u" class="throw" type="button">U THROW</button><button data-key="o" class="burst" type="button">O BURST</button></div></div>
+      <div class="mobile-action-stack"><div class="mobile-attacks"><button data-key="j" class="light" type="button">J<br><small>LIGHT</small></button><button data-key="k" class="heavy" type="button">K<br><small>HEAVY</small></button><button data-key="n" class="low" type="button">N<br><small>LOW</small></button><button data-key="m" class="overhead" type="button">M<br><small>OVERHEAD</small></button><button data-key="l" class="special" type="button">L<br><small>SPECIAL</small></button><button data-key="i" class="super" type="button">I<br><small>OVERDRIVE</small></button></div><div class="mobile-utility"><button data-key="c" class="crouch" type="button">C CROUCH</button><button data-key="e" class="assist" type="button">E ASSIST</button><button data-key="u" class="throw" type="button">U THROW</button><button data-key="o" class="burst" type="button">O BURST</button></div></div>
     </section>
 
     <section class="result-panel" id="resultPanel" hidden>
-      <div><p class="kicker">MATCH REPORT / BUILD 3.0</p><h2 id="resultTitle">LUNA WINS</h2><p id="resultMessage">昼は、まだ終わらない。</p></div>
+      <div><p class="kicker">MATCH REPORT / BUILD 3.29</p><h2 id="resultTitle">LUNA WINS</h2><p id="resultMessage">昼は、まだ終わらない。</p></div>
       <div class="result-stats"><span>HITS <b id="resultHits">0</b></span><span>MAX COMBO <b id="resultCombo">0</b></span><span>GRADE <b id="resultGrade">B</b></span><span>SHARDS <b id="resultShards">0</b></span><span>RUN SCORE <b id="resultScore">0</b></span></div>
+      <div class="result-log" id="resultLogSummary" aria-live="polite">FIGHT LOG：まだ記録なし</div>
+      <details class="match-log-panel" id="matchLogPanel">
+        <summary>OPEN FIGHT LOG <span id="matchLogCount">0 EVENTS</span></summary>
+        <div class="match-log-toolbar">
+          <label for="matchLogFilter">FILTER<select id="matchLogFilter"><option value="all">ALL EVENTS</option><option value="cpu">CPU READS</option><option value="combat">COMBAT ONLY</option><option value="round">ROUNDS</option></select></label>
+          <span id="matchLogHint">LOCAL ONLY / newest 40 events</span>
+        </div>
+        <div class="match-log-detail" id="matchLogDetail" aria-live="polite">SELECT AN EVENT TO INSPECT FRAME DATA</div>
+        <ol class="match-log-timeline" id="matchLogTimeline" aria-live="polite"></ol>
+      </details>
       <button class="btn btn-ghost" id="shareResultButton" type="button">SHARE RESULT ↗</button>
       <button class="btn btn-primary" id="nextArcadeButton" type="button" hidden>NEXT FIGHT <span>→</span></button>
       <button class="btn btn-primary" id="rematchButton" type="button">REMATCH <span>→</span></button>
@@ -134,7 +160,7 @@
 
     <footer><span>made with Luna + Kaz</span><span>WORK 03 / PLAYABLE AI AGENT STORY</span><span><a href="https://note.com/shiny_eagle152" target="_blank" rel="noreferrer">制作ログを読む ↗</a></span></footer>
   </main>
-  <script src="game.js?v=36"></script>
-  <script src="showroom3d.js?v=36"></script>
+  <script src="game.js?v=63"></script>
+  <script src="showroom3d.js?v=64"></script>
 </body>
 </html>
